@@ -18,10 +18,12 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 
 import { useWatchlist, AVATAR_OPTIONS } from '../context/WatchlistContext';
+import { useAuth } from '../context/AuthContext';
 import { movies } from '../data/movies';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const {
     watchlist,
     watchlistMovies,
@@ -31,10 +33,8 @@ export default function Profile() {
     userAvatar,
     updateUserAvatar,
     showToast,
-    isAuthenticated,
     login,
     register,
-    logout,
   } = useWatchlist();
 
   // Active interactive modal/panel state
@@ -50,12 +50,23 @@ export default function Profile() {
   const [authError, setAuthError] = useState('');
 
   // Profile edit form state
-  const [editName, setEditName] = useState(userProfile?.name || 'Alex Vance');
-  const [editEmail, setEditEmail] = useState(userProfile?.email || 'alex@aspectt.com');
+  const [editName, setEditName] = useState(userProfile?.name || '');
+  const [editEmail, setEditEmail] = useState(userProfile?.email || '');
   const [editPhone, setEditPhone] = useState(userProfile?.phone || '+1 (555) 382-9014');
   const [selectedAvatar, setSelectedAvatar] = useState(
     () => AVATAR_OPTIONS.find((a) => a.src === userAvatar) || userProfile?.avatar || AVATAR_OPTIONS[0]
   );
+
+  // Synchronize profile form fields when auth state or user profile changes
+  useEffect(() => {
+    if (userProfile) {
+      setEditName(userProfile.name || '');
+      setEditEmail(userProfile.email || '');
+      setEditPhone(userProfile.phone || '+1 (555) 382-9014');
+      const avatar = AVATAR_OPTIONS.find((a) => a.src === userAvatar) || userProfile.avatar || AVATAR_OPTIONS[0];
+      setSelectedAvatar(avatar);
+    }
+  }, [userProfile, userAvatar]);
 
   const savedMovies =
     watchlistMovies && watchlistMovies.length > 0
@@ -182,9 +193,7 @@ export default function Profile() {
   const handleLogout = () => {
     logout();
     setActiveModal(null);
-    setTimeout(() => {
-      navigate('/');
-    }, 400);
+    navigate('/', { replace: true });
   };
 
   return (
@@ -192,109 +201,157 @@ export default function Profile() {
       <div className="max-w-xl mx-auto">
         
         {/* User Header Section Card */}
-        <div className="bg-[#282B30] border border-[#353941] rounded-xl p-6 sm:p-8 mb-6 relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-            {/* User Avatar with Edit Trigger */}
-            <div className="relative group cursor-pointer" onClick={openEditProfile} title="Change Profile Avatar">
-              <Avatar
-                src={userAvatar || userProfile?.avatar?.src}
-                alt={userProfile?.name}
-                sx={{
-                  width: 80,
-                  height: 80,
-                  bgcolor: userProfile?.avatar?.color || '#7E57C2',
-                  fontSize: '2rem',
-                  fontWeight: 700,
-                  color: '#FFFFFF',
-                  borderRadius: '14px',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
-                  border: '2px solid #353941',
-                }}
-              >
-                {userProfile?.name?.charAt(0) || 'A'}
-              </Avatar>
-              <div className="absolute inset-0 bg-black/60 rounded-[14px] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
-                <EditOutlinedIcon fontSize="small" />
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
-                      {userProfile?.name}
-                    </h1>
-                    {/* Mobile: Pencil icon right next to the name */}
-                    <button
-                      onClick={openEditProfile}
-                      className="sm:hidden p-1 text-[#B8BCC4] hover:text-[#7E57C2] transition-colors cursor-pointer"
-                      title="Edit Profile Details"
-                      aria-label="Edit Profile Details"
-                    >
-                      <EditOutlinedIcon sx={{ fontSize: 17 }} />
-                    </button>
-                    <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#1E2024] border border-[#353941] text-[#7E57C2]">
-                      PREMIUM
-                    </span>
-                  </div>
-                  {/* Mobile: Plan name directly under the name */}
-                  <div className="sm:hidden text-xs text-[#B8BCC4] mt-1 font-medium">
-                    <span className="text-[#8A8F99]">Plan: </span>
-                    <strong className="text-white">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</strong>
-                  </div>
-                </div>
-
-                {/* PC and Tablet: "Edit Details" button (hidden on mobile) */}
-                <button
-                  onClick={openEditProfile}
-                  className="hidden sm:inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E2024] hover:bg-[#353941] border border-[#353941] text-xs font-medium text-white transition-colors cursor-pointer"
+        {isAuthenticated && (userProfile || user) ? (
+          <div className="bg-[#282B30] border border-[#353941] rounded-xl p-6 sm:p-8 mb-6 relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+              {/* User Avatar with Edit Trigger */}
+              <div className="relative group cursor-pointer" onClick={openEditProfile} title="Change Profile Avatar">
+                <Avatar
+                  src={userAvatar || userProfile?.avatar?.src || user?.avatarUrl}
+                  alt={userProfile?.name || user?.name}
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: userProfile?.avatar?.color || '#7E57C2',
+                    fontSize: '2rem',
+                    fontWeight: 700,
+                    color: '#FFFFFF',
+                    borderRadius: '14px',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+                    border: '2px solid #353941',
+                  }}
                 >
-                  <EditOutlinedIcon sx={{ fontSize: 14 }} />
-                  <span>Edit Details</span>
-                </button>
-              </div>
-
-              {/* Contact info: Email & Phone */}
-              <div className="mt-2.5 space-y-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#B8BCC4] font-mono">
-                  <EmailOutlinedIcon sx={{ fontSize: 14 }} className="text-[#8A8F99]" />
-                  <span className="truncate">{userProfile?.email}</span>
-                </div>
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#B8BCC4] font-mono">
-                  <PhoneAndroidOutlinedIcon sx={{ fontSize: 14 }} className="text-[#8A8F99]" />
-                  <span>{userProfile?.phone || '+1 (555) 382-9014'}</span>
+                  {(userProfile?.name || user?.name || 'A').charAt(0).toUpperCase()}
+                </Avatar>
+                <div className="absolute inset-0 bg-black/60 rounded-[14px] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                  <EditOutlinedIcon fontSize="small" />
                 </div>
               </div>
 
-              {/* PC and Tablet: Plan row at the bottom (hidden on mobile where it sits under the name) */}
-              <div className="hidden sm:flex items-center justify-start gap-2 mt-3 text-xs text-[#8A8F99] pt-2 border-t border-[#353941]/60">
-                <span>Plan: <strong className="text-[#B8BCC4]">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</strong></span>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center justify-center sm:justify-start gap-2">
+                      <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
+                        {userProfile?.name || user?.name || 'Aspectt Member'}
+                      </h1>
+                      {/* Mobile: Pencil icon right next to the name */}
+                      <button
+                        onClick={openEditProfile}
+                        className="sm:hidden p-1 text-[#B8BCC4] hover:text-[#7E57C2] transition-colors cursor-pointer"
+                        title="Edit Profile Details"
+                        aria-label="Edit Profile Details"
+                      >
+                        <EditOutlinedIcon sx={{ fontSize: 17 }} />
+                      </button>
+                      <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#1E2024] border border-[#353941] text-[#7E57C2]">
+                        {user?.subscriptionTier === 'pro' || userProfile?.plan?.includes('Ultra') ? 'PREMIUM' : 'MEMBER'}
+                      </span>
+                    </div>
+                    {/* Mobile: Plan name directly under the name */}
+                    <div className="sm:hidden text-xs text-[#B8BCC4] mt-1 font-medium">
+                      <span className="text-[#8A8F99]">Plan: </span>
+                      <strong className="text-white">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</strong>
+                    </div>
+                  </div>
+
+                  {/* PC and Tablet: "Edit Details" button (hidden on mobile) */}
+                  <button
+                    onClick={openEditProfile}
+                    className="hidden sm:inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E2024] hover:bg-[#353941] border border-[#353941] text-xs font-medium text-white transition-colors cursor-pointer"
+                  >
+                    <EditOutlinedIcon sx={{ fontSize: 14 }} />
+                    <span>Edit Details</span>
+                  </button>
+                </div>
+
+                {/* Contact info: Email & Phone */}
+                <div className="mt-2.5 space-y-1">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#B8BCC4] font-mono">
+                    <EmailOutlinedIcon sx={{ fontSize: 14 }} className="text-[#8A8F99]" />
+                    <span className="truncate">{userProfile?.email || user?.email}</span>
+                  </div>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#B8BCC4] font-mono">
+                    <PhoneAndroidOutlinedIcon sx={{ fontSize: 14 }} className="text-[#8A8F99]" />
+                    <span>{userProfile?.phone || '+1 (555) 382-9014'}</span>
+                  </div>
+                </div>
+
+                {/* PC and Tablet: Plan row at the bottom (hidden on mobile where it sits under the name) */}
+                <div className="hidden sm:flex items-center justify-start gap-2 mt-3 text-xs text-[#8A8F99] pt-2 border-t border-[#353941]/60">
+                  <span>Plan: <strong className="text-[#B8BCC4]">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</strong></span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-[#282B30] border border-[#353941] rounded-xl p-6 sm:p-8 mb-6 text-center">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#1E2024] border border-[#353941] flex items-center justify-center text-[#7E57C2] mb-3">
+              <Avatar
+                sx={{
+                  width: 48,
+                  height: 48,
+                  bgcolor: '#353941',
+                  color: '#B8BCC4',
+                  fontSize: '1.25rem',
+                }}
+              >
+                ?
+              </Avatar>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Aspectt Cinema Account
+            </h1>
+            <p className="text-xs sm:text-sm text-[#8A8F99] max-w-sm mx-auto mt-1 mb-5">
+              Sign in or create an account to access customized playback settings, watchlist synchronization, and member perks.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={() => {
+                  setAuthTab('login');
+                  setAuthError('');
+                  setActiveModal('auth');
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#7E57C2] hover:bg-[#6D48B5] text-white text-xs font-semibold shadow-md shadow-[#7E57C2]/20 transition-all cursor-pointer"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => {
+                  setAuthTab('register');
+                  setAuthError('');
+                  setActiveModal('auth');
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#1E2024] hover:bg-[#353941] border border-[#353941] text-white text-xs font-semibold transition-all cursor-pointer"
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Menu Items List Card */}
         <div className="bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden divide-y divide-[#353941]">
           
-          {/* Profile (Edit icon) Option */}
-          <button
-            onClick={openEditProfile}
-            className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#353941] transition-colors text-left group cursor-pointer"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-8 h-8 rounded-lg bg-[#1E2024] border border-[#353941] flex items-center justify-center text-[#B8BCC4] group-hover:text-white transition-colors">
-                <EditOutlinedIcon fontSize="small" />
+          {/* Profile (Edit icon) Option - Only when Authenticated */}
+          {isAuthenticated && (
+            <button
+              onClick={openEditProfile}
+              className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#353941] transition-colors text-left group cursor-pointer"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-8 h-8 rounded-lg bg-[#1E2024] border border-[#353941] flex items-center justify-center text-[#B8BCC4] group-hover:text-white transition-colors">
+                  <EditOutlinedIcon fontSize="small" />
+                </div>
+                <span className="text-sm font-semibold text-white">Profile Details</span>
               </div>
-              <span className="text-sm font-semibold text-white">Profile Details</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-[#B8BCC4]">
-              <span className="hidden sm:inline">Edit Avatar</span>
-              <ChevronRightIcon fontSize="small" className="text-[#8A8F99]" />
-            </div>
-          </button>
+              <div className="flex items-center gap-2 text-xs text-[#B8BCC4]">
+                <span className="hidden sm:inline">Edit Avatar</span>
+                <ChevronRightIcon fontSize="small" className="text-[#8A8F99]" />
+              </div>
+            </button>
+          )}
 
           {/* 1. Subscription Details */}
           <button
@@ -388,8 +445,9 @@ export default function Profile() {
           {/* 7. Auth (Sign In or Logout) */}
           {isAuthenticated ? (
             <button
-              onClick={() => setActiveModal('logout')}
+              onClick={handleLogout}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#332024] transition-colors text-left group cursor-pointer border-t border-[#4A282D]"
+              title="Logout from Aspectt"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-8 h-8 rounded-lg bg-[#24171A] border border-[#4A282D] flex items-center justify-center text-[#E57373] group-hover:text-[#FF8A80] transition-colors">

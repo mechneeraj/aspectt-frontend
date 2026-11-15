@@ -1,25 +1,27 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AVATAR_OPTIONS, DEFAULT_AVATAR_URL } from '../data/avatars';
 import { authApi, getStoredToken, normalizeMovie } from '../api/client';
+import { useAuth } from './AuthContext';
 
 export { AVATAR_OPTIONS, DEFAULT_AVATAR_URL };
 
-const DEFAULT_PROFILE = {
-  name: 'Alex Vance',
-  email: 'alex@aspectt.com',
-  phone: '+1 (555) 382-9014',
-  avatar: AVATAR_OPTIONS[0],
-  plan: 'Aspectt Ultra (4K UHD)',
-  language: 'English (US)',
-};
-
-const WatchlistContext = createContext();
+const WatchlistContext = createContext(null);
 
 export const WatchlistProvider = ({ children }) => {
-  const [token, setToken] = useState(() => getStoredToken());
-  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getStoredToken()));
+  const {
+    token,
+    user,
+    isAuthenticated,
+    login: authLogin,
+    register: authRegister,
+    logout: authLogout,
+    refreshUser,
+    updateUser: authUpdateUser,
+    openAuthModal,
+    closeAuthModal,
+  } = useAuth();
 
-  // Watchlist IDs
+  // Watchlist IDs state
   const [watchlist, setWatchlist] = useState(() => {
     try {
       const saved =
@@ -34,42 +36,7 @@ export const WatchlistProvider = ({ children }) => {
   // Full movie objects for saved watchlist view
   const [watchlistMovies, setWatchlistMovies] = useState([]);
 
-  // Active user avatar state synced with localStorage key 'aspectt_user_avatar'
-  const [userAvatar, setUserAvatar] = useState(() => {
-    try {
-      const savedAvatar =
-        localStorage.getItem('aspectt_user_avatar') ||
-        localStorage.getItem('aspect_user_avatar');
-      if (savedAvatar) return savedAvatar;
-      const savedProfile =
-        localStorage.getItem('aspectt_user_profile') ||
-        localStorage.getItem('aspect_user_profile');
-      if (savedProfile) {
-        const parsed = JSON.parse(savedProfile);
-        if (parsed.avatar?.src) return parsed.avatar.src;
-        if (typeof parsed.avatar === 'string') return parsed.avatar;
-      }
-      return DEFAULT_AVATAR_URL;
-    } catch {
-      return DEFAULT_AVATAR_URL;
-    }
-  });
-
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const saved =
-        localStorage.getItem('aspectt_user_profile') ||
-        localStorage.getItem('aspect_user_profile');
-      const initialProfile = saved ? JSON.parse(saved) : DEFAULT_PROFILE;
-      if (!initialProfile.avatar || !initialProfile.avatar.src) {
-        initialProfile.avatar = AVATAR_OPTIONS[0];
-      }
-      return initialProfile;
-    } catch {
-      return DEFAULT_PROFILE;
-    }
-  });
-
+  // Toast feedback message
   const [toastMessage, setToastMessage] = useState(null);
 
   const showToast = useCallback((message) => {
@@ -79,38 +46,37 @@ export const WatchlistProvider = ({ children }) => {
     }, 3000);
   }, []);
 
-  // Fetch live profile and watchlist from PostgreSQL if authenticated
+  // Compute reactive userProfile object from active authenticated user
+  const userProfile = isAuthenticated && user
+    ? {
+        name: user.name || 'Aspectt Member',
+        email: user.email || '',
+        phone: user.phone || '+1 (555) 382-9014',
+        avatar:
+          AVATAR_OPTIONS.find((a) => a.src === user.avatarUrl) || {
+            id: 'avatar-user',
+            name: user.name || 'User',
+            src: user.avatarUrl || DEFAULT_AVATAR_URL,
+            color: '#7E57C2',
+          },
+        plan:
+          user.subscriptionTier === 'pro'
+            ? 'Aspectt Ultra (4K UHD)'
+            : 'Aspectt Basic',
+        language:
+          user.appLanguage === 'en'
+            ? 'English (US)'
+            : user.appLanguage || 'English (US)',
+      }
+    : null;
+
+  // Active user avatar URL synced with authenticated user state
+  const userAvatar = user?.avatarUrl || userProfile?.avatar?.src || DEFAULT_AVATAR_URL;
+
+  // Fetch live watchlist from PostgreSQL backend if authenticated
   const syncWithBackend = useCallback(async () => {
     const currentToken = getStoredToken();
-    if (!currentToken) return;
-
-    try {
-      const profile = await authApi.getProfile();
-      if (profile) {
-        setIsAuthenticated(true);
-        const avatarObj =
-          AVATAR_OPTIONS.find((a) => a.src === profile.avatarUrl) || {
-            id: 'avatar-custom',
-            name: profile.name,
-            src: profile.avatarUrl || DEFAULT_AVATAR_URL,
-            color: '#7E57C2',
-          };
-
-        setUserProfile((prev) => ({
-          ...prev,
-          name: profile.name,
-          email: profile.email,
-          avatar: avatarObj,
-          plan: profile.subscriptionTier === 'pro' ? 'Aspectt Ultra (4K UHD)' : prev.plan,
-        }));
-
-        if (profile.avatarUrl) {
-          setUserAvatar(profile.avatarUrl);
-        }
-      }
-    } catch (err) {
-      console.warn('Backend profile sync skipped:', err.message);
-    }
+    if (!currentToken || !isAuthenticated) return;
 
     try {
       const liveWatchlist = await authApi.getWatchlist();
@@ -121,11 +87,15 @@ export const WatchlistProvider = ({ children }) => {
     } catch (err) {
       console.warn('Backend watchlist sync skipped:', err.message);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    syncWithBackend();
-  }, [syncWithBackend]);
+    if (isAuthenticated) {
+      syncWithBackend();
+    } else {
+      setWatchlistMovies([]);
+    }
+  }, [isAuthenticated, syncWithBackend]);
 
   // Sync watchlist to localStorage
   useEffect(() => {
@@ -136,26 +106,6 @@ export const WatchlistProvider = ({ children }) => {
       console.error(e);
     }
   }, [watchlist]);
-
-  // Sync user profile to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('aspectt_user_profile', JSON.stringify(userProfile));
-      localStorage.setItem('aspect_user_profile', JSON.stringify(userProfile));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [userProfile]);
-
-  // Sync active user avatar URL to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('aspectt_user_avatar', userAvatar);
-      localStorage.setItem('aspect_user_avatar', userAvatar);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [userAvatar]);
 
   /**
    * Toggle Watchlist: Calls POST /api/user/watchlist/:movieId if authenticated,
@@ -177,7 +127,7 @@ export const WatchlistProvider = ({ children }) => {
     }
 
     // Persist to PostgreSQL backend if authenticated
-    if (getStoredToken()) {
+    if (getStoredToken() && isAuthenticated) {
       try {
         await authApi.toggleWatchlist(movieId);
         // Refresh full watchlist from backend
@@ -209,21 +159,11 @@ export const WatchlistProvider = ({ children }) => {
 
     const avatarUrl = avatarObj.src || avatarObj;
 
-    setUserAvatar(avatarUrl);
-    setUserProfile((prev) => ({
-      ...prev,
-      avatar: avatarObj,
-    }));
+    // Update AuthContext user state
+    authUpdateUser({ avatarUrl });
 
-    try {
-      localStorage.setItem('aspectt_user_avatar', avatarUrl);
-      localStorage.setItem('aspect_user_avatar', avatarUrl);
-    } catch (e) {
-      console.error(e);
-    }
-
-    // Persist to backend database
-    if (getStoredToken()) {
+    // Persist to backend database if authenticated
+    if (getStoredToken() && isAuthenticated) {
       try {
         await authApi.updateProfile({ avatarUrl });
       } catch (err) {
@@ -250,30 +190,26 @@ export const WatchlistProvider = ({ children }) => {
           : newDetails.avatar;
 
       avatarUrl = avatarObj.src || avatarObj;
-      setUserAvatar(avatarUrl);
-      try {
-        localStorage.setItem('aspectt_user_avatar', avatarUrl);
-        localStorage.setItem('aspect_user_avatar', avatarUrl);
-      } catch (e) {
-        console.error(e);
-      }
     }
 
-    setUserProfile((prev) => ({
-      ...prev,
-      ...newDetails,
-    }));
+    // Update in reactive AuthContext state
+    authUpdateUser({
+      name: newDetails.name || user?.name,
+      avatarUrl,
+      subscriptionTier: newDetails.plan === 'Aspectt Ultra (4K UHD)' ? 'pro' : 'basic',
+      appLanguage: newDetails.language === 'English (US)' ? 'en' : newDetails.language,
+    });
 
     showToast('Profile information updated successfully');
 
     // Persist to backend database
-    if (getStoredToken()) {
+    if (getStoredToken() && isAuthenticated) {
       try {
         await authApi.updateProfile({
           name: newDetails.name,
           avatarUrl,
-          appLanguage: newDetails.language,
-          subscriptionTier: newDetails.plan,
+          appLanguage: newDetails.language === 'English (US)' ? 'en' : newDetails.language,
+          subscriptionTier: newDetails.plan === 'Aspectt Ultra (4K UHD)' ? 'pro' : 'basic',
         });
       } catch (err) {
         console.warn('Backend profile update skipped:', err.message);
@@ -285,39 +221,25 @@ export const WatchlistProvider = ({ children }) => {
    * Login user with email & password
    */
   const login = async (email, password) => {
-    const res = await authApi.login({ email, password });
-    if (res?.token) {
-      setToken(res.token);
-      setIsAuthenticated(true);
-      await syncWithBackend();
-      showToast(`Welcome back, ${res.user?.name || 'Alex'}!`);
-      return res;
-    }
-    throw new Error('Authentication failed');
+    const res = await authLogin(email, password);
+    await syncWithBackend();
+    return res;
   };
 
   /**
    * Register new user
    */
-  const register = async (name, email, password, avatarUrl) => {
-    const res = await authApi.register({ name, email, password, avatarUrl });
-    if (res?.token) {
-      setToken(res.token);
-      setIsAuthenticated(true);
-      await syncWithBackend();
-      showToast(`Welcome to Aspectt, ${res.user?.name}!`);
-      return res;
-    }
-    throw new Error('Registration failed');
+  const register = async (name, email, password, avatarUrl, otp) => {
+    const res = await authRegister(name, email, password, avatarUrl, otp);
+    await syncWithBackend();
+    return res;
   };
 
   /**
-   * Logout user
+   * Logout user immediately
    */
   const logout = () => {
-    authApi.logout();
-    setToken(null);
-    setIsAuthenticated(false);
+    authLogout();
     setWatchlist([]);
     setWatchlistMovies([]);
     showToast('Logged out of Aspectt');
@@ -329,6 +251,7 @@ export const WatchlistProvider = ({ children }) => {
     <WatchlistContext.Provider
       value={{
         token,
+        user,
         isAuthenticated,
         login,
         register,
@@ -344,6 +267,8 @@ export const WatchlistProvider = ({ children }) => {
         toastMessage,
         showToast,
         syncWithBackend,
+        openAuthModal,
+        closeAuthModal,
       }}
     >
       {children}
@@ -351,4 +276,10 @@ export const WatchlistProvider = ({ children }) => {
   );
 };
 
-export const useWatchlist = () => useContext(WatchlistContext);
+export const useWatchlist = () => {
+  const context = useContext(WatchlistContext);
+  if (!context) {
+    throw new Error('useWatchlist must be used within a WatchlistProvider');
+  }
+  return context;
+};

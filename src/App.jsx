@@ -9,6 +9,7 @@ import MovieDetails from './pages/MovieDetails';
 import Profile from './pages/Profile';
 import BehindTheLens from './pages/BehindTheLens';
 import Toast from './components/Toast';
+import AuthModal from './components/AuthModal';
 import { useWatchlist } from './context/WatchlistContext';
 
 export default function App() {
@@ -37,6 +38,9 @@ export default function App() {
 
       {/* Global One-Line Footer for Every Page */}
       <Footer />
+
+      {/* Global Auth Modal */}
+      <AuthModal />
 
       {/* Global Toast for Actions */}
       <Toast message={toastMessage} />
