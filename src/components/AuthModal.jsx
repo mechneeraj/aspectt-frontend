@@ -4,6 +4,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { useAuth } from '../context/AuthContext';
 import { useWatchlist } from '../context/WatchlistContext';
 
@@ -15,6 +17,7 @@ export default function AuthModal() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,6 +26,7 @@ export default function AuthModal() {
     if (authModal.isOpen) {
       setTab(authModal.initialTab || 'login');
       setError('');
+      setShowPassword(false);
       // Do not clear email/password on tab toggle if already typed
     }
   }, [authModal.isOpen, authModal.initialTab]);
@@ -120,6 +124,7 @@ export default function AuthModal() {
             onClick={() => {
               setTab('login');
               setError('');
+              setShowPassword(false);
             }}
             className={`py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               tab === 'login'
@@ -134,6 +139,7 @@ export default function AuthModal() {
             onClick={() => {
               setTab('register');
               setError('');
+              setShowPassword(false);
             }}
             className={`py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               tab === 'register'
@@ -194,21 +200,54 @@ export default function AuthModal() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#B8BCC4] mb-1.5">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-[#B8BCC4]">
+                Password
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="text-[11px] text-[#8A8F99] hover:text-[#7E57C2] transition-colors cursor-pointer flex items-center gap-1 select-none"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <>
+                    <VisibilityOffOutlinedIcon sx={{ fontSize: 14 }} />
+                    <span>Hide</span>
+                  </>
+                ) : (
+                  <>
+                    <VisibilityOutlinedIcon sx={{ fontSize: 14 }} />
+                    <span>Show</span>
+                  </>
+                )}
+              </button>
+            </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8A8F99]">
                 <LockOutlinedIcon sx={{ fontSize: 18 }} />
               </div>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-[#1E2024] border border-[#353941] rounded-xl text-sm text-white placeholder-[#8A8F99] focus:outline-none focus:border-[#7E57C2] transition-colors"
+                className="w-full pl-9 pr-10 py-2.5 bg-[#1E2024] border border-[#353941] rounded-xl text-sm text-white placeholder-[#8A8F99] focus:outline-none focus:border-[#7E57C2] transition-colors"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#8A8F99] hover:text-white transition-colors cursor-pointer"
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <VisibilityOffOutlinedIcon sx={{ fontSize: 18 }} />
+                ) : (
+                  <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
+                )}
+              </button>
             </div>
           </div>
 

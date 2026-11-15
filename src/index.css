@@ -58,3 +58,10 @@
   scrollbar-width: none;
 }
 
+/* Disable native browser password reveal and clear buttons (Microsoft Edge / Windows Chromium) */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
+
