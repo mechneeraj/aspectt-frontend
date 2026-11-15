@@ -13,6 +13,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import SpeedIcon from '@mui/icons-material/Speed';
 import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
+import { moviesApi } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2];
 
@@ -81,8 +83,78 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
   const [selectedQuality, setSelectedQuality] = useState(-1);
   const [actualLevel, setActualLevel] = useState(-1);
 
-  const streamUrl = (movie?.videoStreamUrl || movie?.clipUrl || movie?.streamUrl || '').trim();
+  // Auth & Secure Playback state
+  const { logout, openAuthModal, isAuthenticated } = useAuth();
+  const [streamUrl, setStreamUrl] = useState('');
+  const [isLoadingStream, setIsLoadingStream] = useState(false);
+  const [streamError, setStreamError] = useState('');
+
   const isM3u8 = streamUrl.endsWith('.m3u8') || /\.m3u8($|\?|#)/i.test(streamUrl);
+
+  // Secure Server-Side Stream Authorization & Retrieval
+  useEffect(() => {
+    if (!isOpen || !movie) {
+      setStreamUrl('');
+      setIsLoadingStream(false);
+      setStreamError('');
+      return;
+    }
+
+    let isMounted = true;
+
+    // Direct clips (e.g. Behind The Lens) that supply an explicit clipUrl
+    if (mode === 'Footage' && (movie.clipUrl || movie.videoStreamUrl)) {
+      setStreamUrl((movie.clipUrl || movie.videoStreamUrl || '').trim());
+      setIsLoadingStream(false);
+      return;
+    }
+
+    // For movies: Enforce authentication gate
+    if (!isAuthenticated) {
+      onClose();
+      openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+      return;
+    }
+
+    setIsLoadingStream(true);
+    setStreamError('');
+
+    async function fetchSecureStream() {
+      try {
+        const res = await moviesApi.getStreamUrl(movie.id);
+        if (!isMounted) return;
+        const resolvedUrl = (res?.streamUrl || res?.videoStreamUrl || '').trim();
+        if (resolvedUrl) {
+          setStreamUrl(resolvedUrl);
+        } else {
+          setHasError(true);
+          setStreamError('Secure stream unavailable.');
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        console.error('Secure stream fetch error:', err);
+        if (err?.status === 401) {
+          // Token expired, missing, or invalidated by backend
+          onClose();
+          logout();
+          openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+          return;
+        }
+        setHasError(true);
+        setStreamError(err?.message || 'Failed to authorize video stream.');
+      } finally {
+        if (isMounted) {
+          setIsLoadingStream(false);
+        }
+      }
+    }
+
+    fetchSecureStream();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, movie?.id, mode, isAuthenticated, retryKey, onClose, logout, openAuthModal]);
 
   // Close popover menus when clicking outside
   useEffect(() => {
@@ -157,7 +229,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
 
   // Video / HLS initialization and teardown
   useEffect(() => {
-    if (!isOpen || !movie) return;
+    if (!isOpen || !movie || !streamUrl) return;
 
     setHasError(false);
     setIsPlaying(false);
@@ -168,11 +240,6 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
     setCurrentQuality(-1);
     setSelectedQuality(-1);
     setActualLevel(-1);
-
-    if (!streamUrl) {
-      setHasError(true);
-      return;
-    }
 
     const video = videoRef.current;
     if (!video) return;
@@ -554,6 +621,22 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
             isFullscreen ? 'flex-1 h-full' : 'aspect-video'
           }`}
         >
+          {/* Loading Stream Authorization State */}
+          {isLoadingStream && !hasError && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#121316] text-[#B8BCC4] z-30 pointer-events-auto"
+            >
+              <div className="w-12 h-12 rounded-full border-3 border-[#353941] border-t-[#7E57C2] animate-spin mb-3" />
+              <h4 className="text-white font-semibold text-sm sm:text-base mb-1">
+                Authorizing Playback Stream...
+              </h4>
+              <p className="text-xs text-[#8A8F99]">
+                Verifying secure credentials with Aspectt servers
+              </p>
+            </div>
+          )}
+
           {/* Graceful Dark-Mode Error Screen */}
           {hasError ? (
             <div
@@ -565,10 +648,12 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                 <VideocamOutlinedIcon fontSize="large" />
               </div>
               <h4 className="text-white font-semibold text-base sm:text-lg mb-1">
-                Stream unavailable or processing
+                {streamError || 'Stream unavailable or processing'}
               </h4>
               <p className="text-xs text-[#8A8F99] max-w-sm mb-4">
-                The video stream for this title is currently encoding, unavailable, or unreachable. Please try again later.
+                {streamError
+                  ? 'Unable to authorize access to this protected stream. Please ensure you are logged in.'
+                  : 'The video stream for this title is currently encoding, unavailable, or unreachable. Please try again later.'}
               </p>
               <div className="flex items-center gap-3">
                 {streamUrl ? (

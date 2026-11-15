@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
@@ -9,6 +9,7 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { getMovieById } from '../data/movies';
 import { moviesApi } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { useWatchlist } from '../context/WatchlistContext';
 import PlayerModal from '../components/PlayerModal';
 import { MovieDetailsSkeleton } from '../components/Skeletons';
@@ -16,12 +17,20 @@ import { MovieDetailsSkeleton } from '../components/Skeletons';
 export default function MovieDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [movie, setMovie] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [playerState, setPlayerState] = useState({ isOpen: false, mode: 'feature' });
 
   const { isInWatchlist, toggleWatchlist, showToast } = useWatchlist();
+  const {
+    isAuthenticated,
+    openAuthModal,
+    pendingPlayback,
+    setPendingPlayback,
+    clearPendingPlayback,
+  } = useAuth();
 
   // Fetch /api/movies/:id by route ID
   useEffect(() => {
@@ -52,6 +61,40 @@ export default function MovieDetails() {
       isMounted = false;
     };
   }, [id]);
+
+  // Handle ?play=true query param or post-login auto-launch for this film
+  useEffect(() => {
+    if (!movie) return;
+
+    const queryParams = new URLSearchParams(location.search);
+    const shouldAutoPlay = queryParams.get('play') === 'true' || queryParams.get('autoplay') === 'true';
+
+    const isPendingThisMovie =
+      pendingPlayback &&
+      (pendingPlayback === movie.id ||
+        pendingPlayback.id === movie.id ||
+        pendingPlayback === movie.slug ||
+        pendingPlayback.slug === movie.slug);
+
+    if (shouldAutoPlay || isPendingThisMovie) {
+      if (isAuthenticated) {
+        if (isPendingThisMovie) clearPendingPlayback();
+        setPlayerState({ isOpen: true, mode: 'feature' });
+      } else {
+        setPendingPlayback(movie.id || movie);
+        openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+      }
+    }
+  }, [movie, location.search, isAuthenticated, pendingPlayback, clearPendingPlayback, setPendingPlayback, openAuthModal]);
+
+  const handlePlayClick = () => {
+    if (!isAuthenticated) {
+      setPendingPlayback(movie.id || movie);
+      openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+      return;
+    }
+    setPlayerState({ isOpen: true, mode: 'feature' });
+  };
 
   if (isLoading) {
     return (
@@ -146,9 +189,9 @@ export default function MovieDetails() {
 
               {/* Action Buttons: Play (Matte Purple), Watchlist (wired to POST /user/watchlist/:movieId), Trailer */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                {/* Matte Purple "Play" Button */}
+                {/* Matte Purple "Play" Button with Authentication Gate */}
                 <button
-                  onClick={() => setPlayerState({ isOpen: true, mode: 'feature' })}
+                  onClick={handlePlayClick}
                   className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded bg-[#7E57C2] hover:bg-[#673AB7] active:bg-[#512DA8] text-white font-semibold text-sm tracking-wide transition-colors cursor-pointer"
                 >
                   <PlayArrowIcon fontSize="small" />

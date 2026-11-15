@@ -28,7 +28,40 @@ export const AuthProvider = ({ children }) => {
   const [authModal, setAuthModal] = useState({
     isOpen: false,
     initialTab: 'login', // 'login' | 'register'
+    message: '',
   });
+
+  // Temporary pending playback state for post-login auto-launch
+  const [pendingPlayback, setPendingPlaybackState] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('aspectt_pending_play');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setPendingPlayback = useCallback((movieOrId) => {
+    setPendingPlaybackState(movieOrId);
+    try {
+      if (movieOrId) {
+        sessionStorage.setItem('aspectt_pending_play', JSON.stringify(movieOrId));
+      } else {
+        sessionStorage.removeItem('aspectt_pending_play');
+      }
+    } catch (e) {
+      console.warn('Failed to update pending playback storage:', e);
+    }
+  }, []);
+
+  const clearPendingPlayback = useCallback(() => {
+    setPendingPlaybackState(null);
+    try {
+      sessionStorage.removeItem('aspectt_pending_play');
+    } catch (e) {
+      console.warn('Failed to clear pending playback storage:', e);
+    }
+  }, []);
 
   const isAuthenticated = Boolean(token && user);
 
@@ -57,12 +90,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /**
-   * Open Auth Modal
+   * Open Auth Modal with optional message
    */
-  const openAuthModal = useCallback((initialTab = 'login') => {
+  const openAuthModal = useCallback((initialTab = 'login', message = '') => {
     setAuthModal({
       isOpen: true,
       initialTab: initialTab === 'register' ? 'register' : 'login',
+      message: message || '',
     });
   }, []);
 
@@ -70,7 +104,7 @@ export const AuthProvider = ({ children }) => {
    * Close Auth Modal
    */
   const closeAuthModal = useCallback(() => {
-    setAuthModal((prev) => ({ ...prev, isOpen: false }));
+    setAuthModal((prev) => ({ ...prev, isOpen: false, message: '' }));
   }, []);
 
   /**
@@ -218,6 +252,9 @@ export const AuthProvider = ({ children }) => {
         authModal,
         openAuthModal,
         closeAuthModal,
+        pendingPlayback,
+        setPendingPlayback,
+        clearPendingPlayback,
       }}
     >
       {children}

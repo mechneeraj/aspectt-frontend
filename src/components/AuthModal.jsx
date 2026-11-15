@@ -117,6 +117,13 @@ export default function AuthModal() {
           </button>
         </div>
 
+        {/* Auth Gate Notification Banner */}
+        {authModal.message && (
+          <div className="mx-6 mt-4 p-3 bg-[#7E57C2]/15 border border-[#7E57C2]/40 rounded-xl text-xs text-[#E0D4F7] text-center font-medium leading-relaxed">
+            {authModal.message}
+          </div>
+        )}
+
         {/* Tab Toggle */}
         <div className="grid grid-cols-2 p-1.5 mx-6 mt-5 bg-[#1E2024] rounded-xl border border-[#353941]">
           <button

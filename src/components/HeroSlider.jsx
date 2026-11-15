@@ -4,9 +4,11 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useAuth } from '../context/AuthContext';
 
 export default function HeroSlider({ featuredMovies }) {
   const navigate = useNavigate();
+  const { isAuthenticated, openAuthModal, setPendingPlayback } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -272,7 +274,12 @@ export default function HeroSlider({ featuredMovies }) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/movie/${movie.id}`);
+                          if (!isAuthenticated) {
+                            setPendingPlayback(movie.id || movie);
+                            openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+                            return;
+                          }
+                          navigate(`/movie/${movie.id}?play=true`);
                         }}
                         className="inline-flex items-center gap-2 px-5 py-2 sm:px-6 sm:py-2.5 rounded bg-[#7E57C2] hover:bg-[#673AB7] active:bg-[#512DA8] text-white font-semibold text-xs sm:text-sm tracking-wide transition-colors duration-150 cursor-pointer shadow-none"
                       >

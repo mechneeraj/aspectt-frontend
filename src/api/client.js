@@ -213,6 +213,14 @@ export const moviesApi = {
     const movie = await client.get(`/movies/${encodeURIComponent(id)}`);
     return normalizeMovie(movie);
   },
+
+  /**
+   * GET /api/movies/:id/stream
+   * Protected playback endpoint: requires valid Authorization: Bearer <token>
+   */
+  getStreamUrl: async (id) => {
+    return await client.get(`/movies/${encodeURIComponent(id)}/stream`);
+  },
 };
 
 /**
