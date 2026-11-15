@@ -284,6 +284,33 @@ export const submissionsApi = {
  */
 export const authApi = {
   /**
+   * POST /api/auth/send-otp
+   * Validates signup details and triggers Brevo transactional email OTP
+   */
+  sendOtp: async ({ name, email, phone, password }) => {
+    return await client.post('/auth/send-otp', { name, email, phone, password });
+  },
+
+  /**
+   * POST /api/auth/verify-otp
+   * Validates 6-digit OTP, creates permanent User in Supabase, and returns JWT session
+   */
+  verifyOtp: async ({ email, otp, avatar }) => {
+    const res = await client.post('/auth/verify-otp', { email, otp, avatar });
+    if (res?.token) {
+      setStoredToken(res.token);
+    }
+    return res;
+  },
+
+  /**
+   * PATCH /api/auth/avatar
+   */
+  updateAvatar: async (avatar) => {
+    return await client.patch('/auth/avatar', { avatar });
+  },
+
+  /**
    * POST /api/user/login or POST /api/auth/login
    */
   login: async ({ email, password }) => {

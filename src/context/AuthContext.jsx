@@ -189,6 +189,53 @@ export const AuthProvider = ({ children }) => {
   );
 
   /**
+   * Send Signup OTP via Brevo API
+   */
+  const sendOtp = useCallback(async ({ name, email, phone, password }) => {
+    return await authApi.sendOtp({ name, email, phone, password });
+  }, []);
+
+  /**
+   * Verify Signup OTP and create permanent User
+   */
+  const verifyOtp = useCallback(
+    async ({ email, otp, avatar }) => {
+      setLoading(true);
+      try {
+        const res = await authApi.verifyOtp({ email, otp, avatar });
+        if (res?.token && res?.user) {
+          setStoredToken(res.token);
+          setToken(res.token);
+          persistUser(res.user);
+          return res;
+        }
+        throw new Error(res?.message || 'Verification failed. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [persistUser]
+  );
+
+  /**
+   * Update avatar for active user
+   */
+  const setAuthAvatar = useCallback(
+    async (avatar) => {
+      try {
+        const res = await authApi.updateAvatar(avatar);
+        if (res?.user) {
+          persistUser(res.user);
+        }
+        return res;
+      } catch (err) {
+        console.warn('Failed to update avatar:', err);
+      }
+    },
+    [persistUser]
+  );
+
+  /**
    * Immediate Logout handler
    * Clears token and user state immediately across all components without reload
    */
@@ -246,6 +293,9 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        sendOtp,
+        verifyOtp,
+        setAuthAvatar,
         logout,
         refreshUser,
         updateUser,
