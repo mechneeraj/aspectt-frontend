@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: #121212;
+    color: #FFFFFF;
+    font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Custom matte scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #121212;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2E2E2E;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #424242;
+  }
+}
+
+/* Strict Matte styling helpers - preventing glows or gloss */
+.matte-shadow {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.matte-surface {
+  background-color: #1E1E1E;
+}
+
+.matte-border {
+  border: 1px solid #2E2E2E;
+}
+
+/* Hide scrollbar while preserving scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
