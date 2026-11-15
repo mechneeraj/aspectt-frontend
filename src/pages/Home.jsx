@@ -77,22 +77,22 @@ export default function Home() {
     };
   }, []);
 
-  // 2. Fetch Curated Catalog Movies (/api/movies)
+  // 2. Fetch Curated Catalog Movies (/api/movies?curated=true)
   useEffect(() => {
     let isMounted = true;
     async function loadCatalog() {
       try {
-        const list = await moviesApi.getAll();
+        const list = await moviesApi.getAll({ curated: true });
         if (isMounted) {
           if (list && list.length > 0) {
             setCatalogMovies(list);
           } else {
-            setCatalogMovies(mockMovies);
+            setCatalogMovies([]);
           }
         }
       } catch (err) {
         console.warn('Catalog fetch fallback to local:', err.message);
-        if (isMounted) setCatalogMovies(mockMovies);
+        if (isMounted) setCatalogMovies(mockMovies.filter((m) => m.featured || m.isCurated));
       } finally {
         if (isMounted) setIsLoadingCatalog(false);
       }

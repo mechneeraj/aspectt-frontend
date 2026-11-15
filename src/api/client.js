@@ -71,6 +71,7 @@ export const normalizeMovie = (movie) => {
     backdropUrl: movie.backdropUrl || movie.backdrop || movie.posterUrl || movie.poster,
     videoStreamUrl: movie.videoStreamUrl || movie.streamUrl || '',
     isHeroFeatured: Boolean(movie.isHeroFeatured),
+    isCurated: Boolean(movie.isCurated),
   };
 };
 
@@ -186,6 +187,9 @@ export const moviesApi = {
     }
     if (params.year && params.year !== 'All') {
       query.append('year', String(params.year));
+    }
+    if (params.curated !== undefined && params.curated !== null) {
+      query.append('curated', String(params.curated));
     }
 
     const qs = query.toString();
