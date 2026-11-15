@@ -920,102 +920,274 @@ export default function Profile() {
             <div className="p-5 overflow-y-auto space-y-4 text-xs text-[#B8BCC4] leading-relaxed flex-1">
               {/* 1. About Tab Content */}
               {aboutTab === 'about' && (
-                <>
+                <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
                   <div className="pb-3 border-b border-[#353941]">
-                    <h4 className="text-sm font-bold text-white">Aspectt OTT Streaming</h4>
-                    <p className="text-xs text-[#8A8F99]">Deep Ash Gray Matte Edition v1.4.0</p>
+                    <h4 className="text-base font-extrabold text-white tracking-tight">
+                      Every Frame Has a Perspective.
+                    </h4>
+                    <p className="text-xs text-[#7E57C2] font-semibold mt-0.5">
+                      Curated Independent Cinema
+                    </p>
                   </div>
-                  <p>
-                    Aspectt is built with a strict flat matte finish aesthetic: deep ash gray canvas (<code className="text-[#B8BCC4] font-mono">#1E2024</code>), elevated soft ash gray surfaces (<code className="text-[#B8BCC4] font-mono">#282B30</code>) with flat borders (<code className="text-[#B8BCC4] font-mono">#353941</code>), and matte purple accents (<code className="text-[#B8BCC4] font-mono">#7E57C2</code>), eliminating glossy glares and gradients for pure cinematic focus.
+
+                  <p className="text-[#EDEDED] leading-relaxed">
+                    Aspectt is a curated streaming home dedicated to meaningful storytelling, bold filmmaking, and cinema that stays with you long after the credits roll.
                   </p>
-                  <div className="pt-2 border-t border-[#353941] text-[#8A8F99] space-y-1.5">
-                    <div className="flex justify-between py-0.5">
-                      <span>Client Engine:</span>
-                      <strong className="text-white">React 18 & Vite</strong>
-                    </div>
-                    <div className="flex justify-between py-0.5">
-                      <span>Design System:</span>
-                      <strong className="text-white">Tailwind CSS & Material UI</strong>
-                    </div>
-                    <div className="flex justify-between py-0.5">
-                      <span>Resolution:</span>
-                      <strong className="text-white">4K UHD & HDR Dynamic Bitrate</strong>
-                    </div>
-                    <div className="flex justify-between py-0.5">
-                      <span>Spatial Audio:</span>
-                      <strong className="text-white">Dolby Atmos Lossless 5.1</strong>
+
+                  <p className="leading-relaxed">
+                    We believe great stories deserve a stage where they can truly be experienced. Every short film, documentary, and independent feature in our catalog is thoughtfully handpicked by people who deeply care about the craft of cinema.
+                  </p>
+
+                  <div className="pt-2 border-t border-[#353941]">
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-white mb-2.5">
+                      What We Stand For
+                    </h5>
+                    <div className="space-y-2.5">
+                      <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
+                        <strong className="text-white font-semibold block mb-0.5">
+                          Thoughtful Curation
+                        </strong>
+                        <span className="text-[#8A8F99]">
+                          A carefully selected library of festival gems, independent voices, and untold stories from India and around the world.
+                        </span>
+                      </div>
+
+                      <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
+                        <strong className="text-white font-semibold block mb-0.5">
+                          Uninterrupted Viewing
+                        </strong>
+                        <span className="text-[#8A8F99]">
+                          Once you press play, the story belongs entirely to you—no mid-roll interruptions, just pure cinema from start to finish.
+                        </span>
+                      </div>
+
+                      <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
+                        <strong className="text-white font-semibold block mb-0.5">
+                          Filmmakers First
+                        </strong>
+                        <span className="text-[#8A8F99]">
+                          Aspectt is built to empower independent creators. Filmmakers retain 100% ownership of their work through transparent, non-exclusive partnerships and direct audience insights.
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </>
+
+                  <p className="pt-2 border-t border-[#353941] text-[#EDEDED] leading-relaxed">
+                    Whether you are a cinephile searching for your next unforgettable watch or a filmmaker looking for a home that respects your vision—<strong className="text-white">welcome to Aspectt</strong>.
+                  </p>
+
+                  <div className="p-3 bg-[#7E57C2]/15 border border-[#7E57C2]/40 rounded-xl flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-white font-medium text-xs">
+                        Have a film to share?
+                      </p>
+                      <p className="text-[11px] text-[#B8BCC4]">
+                        Submit your work and become part of our growing catalog.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveModal(null);
+                        navigate('/#screener-submission');
+                      }}
+                      className="px-3 py-1.5 bg-[#7E57C2] hover:bg-[#6D48B5] text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-sm"
+                    >
+                      Submit Film
+                    </button>
+                  </div>
+                </div>
               )}
 
               {/* 2. Privacy Policy Tab Content */}
               {aboutTab === 'privacy' && (
-                <>
-                  <div className="pb-2 border-b border-[#353941]">
-                    <h4 className="text-sm font-bold text-white">Privacy & Data Protection</h4>
-                    <p className="text-[#8A8F99] mt-0.5 text-[11px]">Effective Date: November 2026</p>
+                <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
+                  <div className="pb-3 border-b border-[#353941]">
+                    <h4 className="text-base font-bold text-white">Privacy Policy</h4>
+                    <p className="text-[#8A8F99] mt-0.5 text-[11px] font-mono">Last Updated: November 2026</p>
                   </div>
-                  <div className="space-y-3">
+
+                  <p className="text-[#EDEDED]">
+                    Welcome to Aspectt. Your privacy is important to us. This Privacy Policy explains how we collect, use, store, and protect your personal information when you browse our website, create an account, stream content, or submit films on Aspectt.
+                  </p>
+
+                  <div className="space-y-3 pt-1">
                     <div>
-                      <h5 className="font-semibold text-white mb-1">1. Zero Ad-Tracking Philosophy</h5>
+                      <h5 className="font-semibold text-white mb-1.5">1. Information We Collect</h5>
+                      <p className="mb-2">When you use Aspectt, we may collect the following information:</p>
+                      <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
+                        <li>
+                          <strong className="text-white">Account Information:</strong> Your name, email address, mobile number, encrypted password, and chosen profile avatar when you register or verify your account via One-Time Password (OTP).
+                        </li>
+                        <li>
+                          <strong className="text-white">Filmmaker Submission Data:</strong> If you submit a film, we collect your contact details, film metadata, screener links, and related project information.
+                        </li>
+                        <li>
+                          <strong className="text-white">Usage & Streaming Data:</strong> Basic technical logs such as watch activity, playback quality preferences, device/browser type, and IP address to maintain streaming performance and provide transparent watch-time insights to creators.
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1.5">2. How We Use Your Information</h5>
+                      <p className="mb-1.5">We use the collected information strictly to:</p>
+                      <ul className="space-y-1 list-disc list-inside text-[#B8BCC4]">
+                        <li>Create, verify, and secure your Aspectt account (including sending OTP verification emails).</li>
+                        <li>Provide smooth, uninterrupted high-definition video playback and personalized profile features.</li>
+                        <li>Review filmmaker submissions and share aggregated watch-time analytics with respective creators.</li>
+                        <li>Maintain platform security, prevent unauthorized access to video streams, and improve user experience.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1">3. Advertising & Display Placements</h5>
                       <p>
-                        Aspectt operates on an ad-free streaming subscription model. We never sell, rent, or trade your viewing history, catalog interactions, or account credentials to third-party advertisers or data brokers.
+                        While we do not interrupt film playback with mid-roll advertisements, Aspectt may display non-intrusive advertisements or sponsored placements while browsing pages on the platform. Third-party ad partners, if introduced, may use standard cookies or non-personally identifiable browsing data to serve relevant display ads. We never sell your personal contact details (such as your email address or mobile number) to third parties.
                       </p>
                     </div>
+
                     <div>
-                      <h5 className="font-semibold text-white mb-1">2. Information Collected</h5>
+                      <h5 className="font-semibold text-white mb-1">4. Data Storage & Third-Party Services</h5>
                       <p>
-                        We collect only essential information required for service delivery: your display name, email, and mobile phone number for identity authentication and account recovery, as well as client-side watchlist state.
+                        To operate our streaming and authentication infrastructure, we rely on trusted third-party service providers for database hosting, video delivery (CDN), and transactional email delivery. Your passwords are stored in encrypted (hashed) form, and video streams are protected against unauthorized access.
                       </p>
                     </div>
+
                     <div>
-                      <h5 className="font-semibold text-white mb-1">3. Local Data Storage & Security</h5>
+                      <h5 className="font-semibold text-white mb-1">5. Cookies & Local Storage</h5>
                       <p>
-                        Preferences and watchlists are safely stored using encrypted browser storage standards. All communication with streaming nodes utilizes TLS 1.3 encryption.
+                        Aspectt uses browser localStorage and essential cookies to keep you signed in, remember your selected avatar, and preserve your playback preferences across sessions. You can clear your browser storage at any time, though doing so will sign you out of your account.
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-[#353941] text-[11px] text-[#8A8F99]">
-                      For privacy inquiries or account data erasure requests, contact <span className="text-white font-mono">privacy@aspectt.stream</span>.
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1">6. Your Rights & Account Control</h5>
+                      <p>
+                        You may view or update your profile details on your Profile page, or request deletion of your account and associated personal data by contacting us.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1">7. Changes to This Privacy Policy</h5>
+                      <p>
+                        Aspectt reserves the right to update, modify, or replace any part of this Privacy Policy at any time without any prior notice. Any changes will take effect immediately upon being posted on this page. Your continued use of the platform following the posting of updates constitutes your acceptance of the revised policy.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#353941]">
+                      <h5 className="font-semibold text-white mb-1">8. Contact Us</h5>
+                      <p>
+                        If you have any questions regarding this Privacy Policy or your data, please reach out to us through the official contact details provided on the Aspectt website.
+                      </p>
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* 3. Terms and Conditions Tab Content */}
               {aboutTab === 'terms' && (
-                <>
-                  <div className="pb-2 border-b border-[#353941]">
-                    <h4 className="text-sm font-bold text-white">Terms of Service</h4>
-                    <p className="text-[#8A8F99] mt-0.5 text-[11px]">Last Updated: November 2026</p>
+                <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
+                  <div className="pb-3 border-b border-[#353941]">
+                    <h4 className="text-base font-bold text-white">Terms and Conditions</h4>
+                    <p className="text-[#8A8F99] mt-0.5 text-[11px] font-mono">Last Updated: November 2026</p>
                   </div>
-                  <div className="space-y-3">
+
+                  <p className="text-[#EDEDED]">
+                    Welcome to Aspectt. By accessing, browsing, creating an account, streaming content, or submitting films on our website, you agree to comply with and be bound by the following Terms and Conditions. If you do not agree with any part of these terms, please refrain from using the platform.
+                  </p>
+
+                  <div className="space-y-3 pt-1">
                     <div>
-                      <h5 className="font-semibold text-white mb-1">1. License & Usage Grant</h5>
+                      <h5 className="font-semibold text-white mb-1.5">1. Eligibility & Account Registration</h5>
+                      <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
+                        <li>
+                          <strong className="text-white">Account Requirement:</strong> While visitors may browse the public catalog, creating a verified Aspectt account (via One-Time Password authentication) is required to stream full films and access personalized features.
+                        </li>
+                        <li>
+                          <strong className="text-white">Accurate Information:</strong> You agree to provide accurate and complete information (name, email address, and mobile number) during registration and to keep your login credentials confidential.
+                        </li>
+                        <li>
+                          <strong className="text-white">Account Responsibility:</strong> You are responsible for all activity that occurs under your account. Sharing accounts publicly or bypassing authentication controls is strictly prohibited.
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1.5">2. License to Stream & Content Restrictions</h5>
+                      <p className="mb-2">
+                        <strong className="text-white">Personal, Non-Commercial Use:</strong> Aspectt grants you a limited, revocable, non-exclusive, and non-transferable license to stream films on the platform solely for personal, non-commercial viewing.
+                      </p>
+                      <p className="mb-1.5">
+                        <strong className="text-white">Strict Anti-Piracy & Stream Protection:</strong> All films, trailers, artwork, audio, and streaming URLs on Aspectt are protected by copyright and technical access controls. You agree not to:
+                      </p>
+                      <ul className="space-y-1 list-disc list-inside text-[#B8BCC4] pl-1">
+                        <li>Download, rip, screen-record, redistribute, or publicly exhibit any content from Aspectt.</li>
+                        <li>Inspect, extract, share, or hotlink protected video stream URLs (.m3u8 or media segments) outside the official Aspectt player.</li>
+                        <li>Circumvent, disable, or tamper with any security or authentication mechanisms on the platform.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1.5">3. Filmmaker Submissions & Content Ownership</h5>
+                      <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
+                        <li>
+                          <strong className="text-white">100% Creator Ownership:</strong> Filmmakers who submit their work to Aspectt retain 100% ownership and copyright of their films.
+                        </li>
+                        <li>
+                          <strong className="text-white">Non-Exclusive Streaming Grant:</strong> By submitting a film and approving it for publication on Aspectt, the filmmaker grants Aspectt a non-exclusive, worldwide, royalty-free right to host, stream, promote (using trailers, stills, and metadata), and display the film on the platform until removed by mutual agreement or written takedown request.
+                        </li>
+                        <li>
+                          <strong className="text-white">Creator Warranties:</strong> Filmmakers represent and warrant that they hold all necessary rights, music licenses, and clearances for their submitted work and that it does not infringe upon any third-party intellectual property or legal rights.
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1">4. Platform Experience & Browsing Placements</h5>
                       <p>
-                        Aspectt grants you a personal, revocable, non-exclusive, non-transferable license to stream titles from our catalog solely for personal and non-commercial entertainment purposes.
+                        Aspectt provides uninterrupted film playback without mid-roll advertisements. However, Aspectt reserves the right to display non-intrusive sponsored placements or advertisements across browsing pages on the website.
                       </p>
                     </div>
+
                     <div>
-                      <h5 className="font-semibold text-white mb-1">2. Prohibited Conduct</h5>
+                      <h5 className="font-semibold text-white mb-1">5. Suspension & Termination</h5>
                       <p>
-                        Users may not capture, redistribute, broadcast, reverse-engineer, mirror, or circumvent digital rights management (DRM) protections guarding stream playback.
+                        Aspectt reserves the right to suspend or permanently terminate any user account, without prior notice, if we detect unauthorized stream access, piracy, abusive behavior, or any violation of these Terms and Conditions.
                       </p>
                     </div>
+
                     <div>
-                      <h5 className="font-semibold text-white mb-1">3. Subscription Billing & Cancellations</h5>
+                      <h5 className="font-semibold text-white mb-1">6. Disclaimer & Limitation of Liability</h5>
+                      <p className="mb-1.5">
+                        Aspectt is provided on an "as is" and "as available" basis. While we strive for uninterrupted high-definition streaming, we do not guarantee that the platform will always be error-free or uninterrupted due to network or third-party server factors.
+                      </p>
                       <p>
-                        Subscriptions renew automatically each monthly period unless canceled prior to the renewal date. Cancellations retain full streaming access through the end of the paid cycle.
+                        To the fullest extent permitted by law, Aspectt shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform.
                       </p>
                     </div>
+
                     <div>
-                      <h5 className="font-semibold text-white mb-1">4. Intellectual Property</h5>
+                      <h5 className="font-semibold text-white mb-1">7. Governing Law</h5>
                       <p>
-                        All cinematic works, logos, and artwork are protected by copyright laws. Legal questions can be submitted to <span className="text-white font-mono">legal@aspectt.stream</span>.
+                        These Terms and Conditions shall be governed by and construed in accordance with the laws of India, and any disputes arising under these terms shall be subject to the exclusive jurisdiction of the courts in India.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-white mb-1">8. Changes to These Terms</h5>
+                      <p>
+                        Aspectt reserves the right to update, modify, or replace any part of these Terms and Conditions at any time without any prior notice. Any revisions take effect immediately upon being posted on this page. Your continued use of the platform after updates are posted constitutes your acceptance of the revised Terms and Conditions.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#353941]">
+                      <h5 className="font-semibold text-white mb-1">9. Contact Us</h5>
+                      <p>
+                        For any questions regarding these Terms and Conditions, film submissions, or copyright inquiries, please reach out through the official contact channels listed on the Aspectt website.
                       </p>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
