@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <svg id="svg" viewBox="0 0 126 28" width="500">
+    <text
+      id="wordmark"
+      x="25.5"
+      y="23"
+      font-family="'Montserrat', 'Inter', 'Arial Black', sans-serif"
+      font-size="25"
+      font-weight="800"
+      letter-spacing="-0.01em"
+    >
+      <tspan id="spect" fill="#FFFFFF">SPECT</tspan><tspan id="finalT" fill="#7E57C2">T</tspan>
+    </text>
+  </svg>
+  <div id="output"></div>
+  <script>
+    document.fonts.ready.then(() => {
+      const text = document.getElementById('wordmark');
+      const spect = document.getElementById('spect');
+      const finalT = document.getElementById('finalT');
+      const chars = ['S', 'P', 'E', 'C', 'T', 'T'];
+      const data = {};
+      for (let i = 0; i < text.getNumberOfChars(); i++) {
+        const char = text.textContent[i];
+        const rect = text.getExtentOfChar(i);
+        const startPos = text.getStartPositionOfChar(i);
+        const endPos = text.getEndPositionOfChar(i);
+        data[`char_${i}_${char}`] = {
+          x: startPos.x,
+          y: startPos.y,
+          endX: endPos.x,
+          width: rect.width,
+          height: rect.height,
+          rectX: rect.x,
+          rectY: rect.y
+        };
+      }
+      data.totalBBox = text.getBBox();
+      data.finalTBBox = finalT.getBBox();
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      console.log('MEASURE_RESULT:' + JSON.stringify(data));
+    });
+  </script>
+</body>
+</html>
+
