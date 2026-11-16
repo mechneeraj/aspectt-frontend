@@ -20,16 +20,10 @@ export function MovieCardSkeleton() {
 
 export function HeroSliderSkeleton() {
   return (
-    <div className="w-full bg-[#282B30] border border-[#353941] rounded-xl sm:rounded-2xl p-6 sm:p-10 min-h-[340px] sm:min-h-[460px] animate-pulse flex flex-col justify-end relative overflow-hidden">
-      <div className="max-w-xl space-y-3 z-10">
-        <div className="h-4 bg-[#1E2024] rounded w-28 border border-[#353941]" />
-        <div className="h-8 sm:h-12 bg-[#1E2024] rounded w-3/4 border border-[#353941]" />
-        <div className="h-3 sm:h-4 bg-[#1E2024] rounded w-full border border-[#353941]" />
-        <div className="h-3 sm:h-4 bg-[#1E2024] rounded w-2/3 border border-[#353941]" />
-        <div className="flex gap-3 pt-3">
-          <div className="h-9 w-24 bg-[#7E57C2]/40 rounded-lg" />
-          <div className="h-9 w-28 bg-[#1E2024] border border-[#353941] rounded-lg" />
-        </div>
+    <div className="w-full bg-[#282B30] border border-[#353941] rounded-xl sm:rounded-2xl p-6 sm:p-8 min-h-[350px] md:h-[420px] lg:h-[450px] animate-pulse flex flex-col justify-end relative overflow-hidden">
+      <div className="flex gap-2.5 z-10 p-1.5 rounded-xl bg-black/40 border border-white/5 w-fit">
+        <div className="h-10 w-24 bg-[#7C3AED]/40 rounded-lg" />
+        <div className="h-10 w-24 bg-[#18181B] border border-white/10 rounded-lg" />
       </div>
     </div>
   );
