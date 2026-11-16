@@ -253,12 +253,12 @@ export default function HeroSlider({ featuredMovies }) {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!isAuthenticated) {
-                          setPendingPlayback(movie.id || movie);
+                          setPendingPlayback(movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie);
                           openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
                           return;
                         }
                         if (!isSubscribed) {
-                          setPendingPlayback(movie.id || movie);
+                          setPendingPlayback(movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie);
                           navigate('/subscription');
                           return;
                         }

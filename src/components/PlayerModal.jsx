@@ -121,7 +121,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
     // For movies: Enforce authentication gate
     if (!isAuthenticated) {
       onClose();
-      if (setPendingPlayback) setPendingPlayback(movie.id || movie);
+      if (setPendingPlayback) setPendingPlayback(movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie);
       openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
       return;
     }
@@ -129,7 +129,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
     // For full feature movies: Enforce subscription gate
     if (mode === 'feature' && !isSubscribed) {
       onClose();
-      if (setPendingPlayback) setPendingPlayback(movie.id || movie);
+      if (setPendingPlayback) setPendingPlayback(movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie);
       navigate('/subscription');
       return;
     }
@@ -161,7 +161,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
         if (err?.status === 403 || err?.data?.code === 'SUBSCRIPTION_REQUIRED') {
           // Subscription required
           onClose();
-          if (setPendingPlayback) setPendingPlayback(movie.id || movie);
+          if (setPendingPlayback) setPendingPlayback(movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie);
           navigate('/subscription');
           return;
         }

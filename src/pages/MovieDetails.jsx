@@ -78,11 +78,12 @@ export default function MovieDetails() {
         pendingPlayback.slug === movie.slug);
 
     if (shouldAutoPlay || isPendingThisMovie) {
+      const moviePayload = movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie;
       if (!isAuthenticated) {
-        setPendingPlayback(movie.id || movie);
+        setPendingPlayback(moviePayload);
         openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
       } else if (!isSubscribed) {
-        setPendingPlayback(movie.id || movie);
+        setPendingPlayback(moviePayload);
         navigate('/subscription');
       } else {
         if (isPendingThisMovie) clearPendingPlayback();
@@ -92,13 +93,14 @@ export default function MovieDetails() {
   }, [movie, location.search, isAuthenticated, isSubscribed, pendingPlayback, clearPendingPlayback, setPendingPlayback, openAuthModal, navigate]);
 
   const handlePlayClick = () => {
+    const moviePayload = movie ? { id: movie.id, title: movie.title, slug: movie.slug } : movie;
     if (!isAuthenticated) {
-      setPendingPlayback(movie.id || movie);
+      setPendingPlayback(moviePayload);
       openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
       return;
     }
     if (!isSubscribed) {
-      setPendingPlayback(movie.id || movie);
+      setPendingPlayback(moviePayload);
       navigate('/subscription');
       return;
     }
