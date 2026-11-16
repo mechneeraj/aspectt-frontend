@@ -39,7 +39,7 @@ export default function SplashIntro() {
     setIsFadingOut(true);
     setTimeout(() => {
       setIsVisible(false);
-    }, 400);
+    }, 600);
   }, []);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function SplashIntro() {
     // Complete unmount after fade transition (2.4s)
     const unmountTimer = setTimeout(() => {
       setIsVisible(false);
-    }, 2400);
+    }, 3500);
 
     // Keyboard shortcut to dismiss (Escape, Space, Enter)
     const handleKeyDown = (e) => {
@@ -80,11 +80,10 @@ export default function SplashIntro() {
   return (
     <div
       onClick={handleDismiss}
-      className={`fixed inset-0 z-[99999] bg-[#09090B] flex flex-col items-center justify-center select-none overflow-hidden cursor-pointer transition-all duration-400 ease-out ${
-        isFadingOut
+      className={`fixed inset-0 z-[99999] bg-[#09090B] flex flex-col items-center justify-center select-none overflow-hidden cursor-pointer transition-all duration-400 ease-out ${isFadingOut
           ? 'opacity-0 scale-[1.02] pointer-events-none'
           : 'opacity-100 scale-100 pointer-events-auto'
-      }`}
+        }`}
       aria-label="Aspectt Intro Splash"
       role="banner"
     >
