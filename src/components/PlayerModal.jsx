@@ -549,10 +549,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
 
   return (
     <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !isFullscreen) onClose();
-      }}
-      className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md overflow-x-hidden w-full max-w-[100vw]"
       role="dialog"
       aria-modal="true"
     >
@@ -564,31 +561,36 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
         onMouseLeave={() => {
           if (isPlaying && !activeMenu) setShowControls(false);
         }}
-        className={`relative w-full bg-black flex flex-col overflow-hidden select-none transition-all duration-200 ${
+        className={`relative w-full max-w-[100vw] sm:max-w-5xl bg-black flex flex-col overflow-hidden select-none transition-all duration-200 ${
           isFullscreen
             ? 'h-screen w-screen max-w-none rounded-none border-0'
-            : 'max-w-5xl bg-[#1E2024] border border-[#353941] rounded-xl shadow-2xl'
+            : 'rounded-none sm:rounded-xl bg-[#1E2024] border-0 sm:border border-[#353941] shadow-2xl'
         } ${!showControls && isPlaying ? 'cursor-none' : 'cursor-default'}`}
       >
         {/* Top Header Overlay */}
         <div
           onClick={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
-          className={`absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-gradient-to-b from-black/85 via-black/40 to-transparent transition-opacity duration-300 ${
+          style={{
+            paddingTop: 'max(10px, env(safe-area-inset-top, 10px))',
+            paddingLeft: 'max(12px, env(safe-area-inset-left, 12px))',
+            paddingRight: 'max(12px, env(safe-area-inset-right, 12px))',
+          }}
+          className={`absolute top-0 inset-x-0 z-20 flex items-center justify-between pb-3 bg-gradient-to-b from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${
             showControls || !isPlaying
               ? 'opacity-100 pointer-events-auto'
               : 'opacity-0 pointer-events-none'
           }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0 pr-4">
-            <span className="text-[10px] sm:text-xs uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-[#1E2024]/80 border border-[#353941] text-[#7E57C2] shrink-0">
+          <div className="flex items-center gap-2 min-w-0 pr-2 sm:pr-4">
+            <span className="text-[9px] sm:text-xs uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-[#1E2024]/90 border border-[#353941] text-[#7E57C2] shrink-0">
               {mode === 'trailer'
                 ? 'Official Trailer'
                 : mode === 'Footage'
                 ? 'Behind the Lens'
                 : 'Auteur Stream'}
             </span>
-            <h3 className="text-white font-semibold text-sm sm:text-base truncate drop-shadow-md">
+            <h3 className="text-white font-semibold text-xs sm:text-base truncate drop-shadow-md">
               {movie.title}
             </h3>
           </div>
@@ -603,7 +605,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
               }
             }}
             onDoubleClick={(e) => e.stopPropagation()}
-            className="text-[#B8BCC4] hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+            className="text-white hover:text-[#7E57C2] p-1.5 sm:p-2 rounded-xl bg-black/60 sm:bg-black/40 border border-white/20 hover:bg-white/20 transition-all cursor-pointer shrink-0 shadow-lg active:scale-95"
             aria-label="Close cinema player"
             title="Close (Esc)"
           >
@@ -741,7 +743,12 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
           <div
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
-            className={`absolute bottom-0 inset-x-0 z-20 flex flex-col gap-2.5 px-4 sm:px-6 pt-14 pb-4 bg-gradient-to-t from-black/95 via-black/75 to-transparent transition-opacity duration-300 ${
+            style={{
+              paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
+              paddingLeft: 'max(10px, env(safe-area-inset-left, 10px))',
+              paddingRight: 'max(10px, env(safe-area-inset-right, 10px))',
+            }}
+            className={`absolute bottom-0 inset-x-0 z-20 flex flex-col gap-1.5 sm:gap-2.5 pt-12 bg-gradient-to-t from-black/95 via-black/80 to-transparent transition-opacity duration-300 ${
               showControls || !isPlaying
                 ? 'opacity-100 pointer-events-auto'
                 : 'opacity-0 pointer-events-none'
@@ -757,12 +764,12 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
               onDoubleClick={(e) => e.stopPropagation()}
               onMouseMove={handleMouseMoveScrubber}
               onMouseLeave={handleMouseLeaveScrubber}
-              className="relative w-full h-1.5 hover:h-2 bg-[#353941]/70 hover:bg-[#353941] rounded-full cursor-pointer transition-all group/scrubber flex items-center"
+              className="relative w-full h-1.5 sm:h-2 hover:h-2.5 bg-[#353941]/70 hover:bg-[#353941] rounded-full cursor-pointer transition-all group/scrubber flex items-center"
             >
               {/* Tooltip on hover */}
               {hoverTime !== null && duration > 0 && (
                 <div
-                  className="absolute bottom-full mb-2 -translate-x-1/2 px-2 py-0.5 rounded bg-[#1E2024] border border-[#353941] text-[11px] font-mono text-white shadow-xl pointer-events-none z-20 whitespace-nowrap"
+                  className="absolute bottom-full mb-2 -translate-x-1/2 px-2 py-0.5 rounded bg-[#1E2024] border border-[#353941] text-[10px] sm:text-[11px] font-mono text-white shadow-xl pointer-events-none z-20 whitespace-nowrap"
                   style={{
                     left: `${Math.max(
                       24,
@@ -788,15 +795,15 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
 
               {/* Scrubber thumb */}
               <div
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-md border border-[#7E57C2] transition-transform scale-0 group-hover/scrubber:scale-100"
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 sm:w-3.5 h-3 sm:h-3.5 rounded-full bg-white shadow-md border border-[#7E57C2] transition-transform scale-100 sm:scale-0 sm:group-hover/scrubber:scale-100"
                 style={{ left: `${Math.min(100, playedPercent)}%` }}
               />
             </div>
 
             {/* Controls Row */}
-            <div className="flex items-center justify-between text-xs text-[#B8BCC4] gap-2 pt-1 select-none">
+            <div className="flex items-center justify-between text-xs text-[#B8BCC4] gap-1 sm:gap-2 pt-0.5 select-none w-full min-w-0">
               {/* Left Controls: Play/Pause, -10s, +10s, Volume, Time */}
-              <div className="flex items-center gap-1 sm:gap-2.5">
+              <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0 shrink">
                 {/* Play / Pause Toggle */}
                 <button
                   onClick={(e) => {
@@ -804,14 +811,14 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     togglePlayPause();
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className="text-white hover:text-[#7E57C2] p-1 sm:p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                  className="text-white hover:text-[#7E57C2] p-1 sm:p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                   aria-label={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
                   title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
                 >
                   {isPlaying ? (
-                    <PauseIcon fontSize="medium" />
+                    <PauseIcon sx={{ fontSize: { xs: 22, sm: 26 } }} />
                   ) : (
-                    <PlayArrowIcon fontSize="medium" />
+                    <PlayArrowIcon sx={{ fontSize: { xs: 22, sm: 26 } }} />
                   )}
                 </button>
 
@@ -822,11 +829,11 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     seekRelative(-10);
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className="text-[#B8BCC4] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                  className="text-[#B8BCC4] hover:text-white p-0.5 sm:p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                   aria-label="Rewind 10 seconds (Left Arrow)"
                   title="Rewind 10s (Left Arrow)"
                 >
-                  <Replay10Icon fontSize="small" />
+                  <Replay10Icon sx={{ fontSize: { xs: 18, sm: 21 } }} />
                 </button>
 
                 {/* Forward +10s */}
@@ -836,18 +843,18 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     seekRelative(10);
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className="text-[#B8BCC4] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                  className="text-[#B8BCC4] hover:text-white p-0.5 sm:p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0"
                   aria-label="Forward 10 seconds (Right Arrow)"
                   title="Forward 10s (Right Arrow)"
                 >
-                  <Forward10Icon fontSize="small" />
+                  <Forward10Icon sx={{ fontSize: { xs: 18, sm: 21 } }} />
                 </button>
 
                 {/* Volume & Mute */}
                 <div
                   onClick={(e) => e.stopPropagation()}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 pl-1"
+                  className="flex items-center gap-1 shrink-0"
                 >
                   <button
                     onClick={(e) => {
@@ -855,14 +862,14 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                       toggleMute();
                     }}
                     onDoubleClick={(e) => e.stopPropagation()}
-                    className="text-[#B8BCC4] hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                    className="text-[#B8BCC4] hover:text-white p-0.5 sm:p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                     aria-label={isMuted ? 'Unmute (M)' : 'Mute (M)'}
                     title={isMuted ? 'Unmute (M)' : 'Mute (M)'}
                   >
                     {isMuted || volume === 0 ? (
-                      <VolumeOffIcon fontSize="small" />
+                      <VolumeOffIcon sx={{ fontSize: { xs: 18, sm: 21 } }} />
                     ) : (
-                      <VolumeUpIcon fontSize="small" />
+                      <VolumeUpIcon sx={{ fontSize: { xs: 18, sm: 21 } }} />
                     )}
                   </button>
                   <input
@@ -874,20 +881,20 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     onChange={handleVolumeChange}
                     onClick={(e) => e.stopPropagation()}
                     aria-label="Volume slider"
-                    className="w-12 sm:w-16 h-1 bg-[#353941] rounded-lg appearance-none cursor-pointer accent-[#7E57C2] hidden xs:block"
+                    className="w-12 sm:w-16 h-1 bg-[#353941] rounded-lg appearance-none cursor-pointer accent-[#7E57C2] hidden md:block"
                   />
                 </div>
 
                 {/* Time Display */}
-                <div className="font-mono text-[11px] sm:text-xs text-[#8A8F99] pl-1.5 whitespace-nowrap">
+                <div className="font-mono text-[10px] sm:text-xs text-[#8A8F99] pl-0.5 sm:pl-1 whitespace-nowrap truncate shrink-0">
                   <span className="text-white">{formatTime(currentTime)}</span>
-                  <span className="mx-1">/</span>
+                  <span className="mx-0.5 sm:mx-1">/</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
               {/* Right Controls: Quality Menu, Speed Menu, Fullscreen */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 {/* HLS Video Quality Selector Popover */}
                 <div ref={qualityMenuRef} className="relative">
                   <button
@@ -896,7 +903,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                       setActiveMenu(activeMenu === 'quality' ? null : 'quality');
                     }}
                     onDoubleClick={(e) => e.stopPropagation()}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px] font-medium transition-colors cursor-pointer ${
+                    className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border text-[10px] sm:text-[11px] font-medium transition-colors cursor-pointer shrink-0 ${
                       activeMenu === 'quality'
                         ? 'bg-[#7E57C2] border-[#7E57C2] text-white'
                         : 'border-[#353941] bg-[#1E2024]/80 text-[#B8BCC4] hover:text-white hover:border-[#4B505B]'
@@ -904,7 +911,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     title="Video Quality"
                     aria-label="Video quality"
                   >
-                    <SettingsIcon sx={{ fontSize: 14 }} />
+                    <SettingsIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />
                     <span className="hidden sm:inline">{activeQualityDisplay}</span>
                     <span className="sm:hidden">
                       {currentQuality === -1 ? 'Auto' : activeQualityDisplay}
@@ -971,7 +978,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                       setActiveMenu(activeMenu === 'speed' ? null : 'speed');
                     }}
                     onDoubleClick={(e) => e.stopPropagation()}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px] font-medium transition-colors cursor-pointer ${
+                    className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border text-[10px] sm:text-[11px] font-medium transition-colors cursor-pointer shrink-0 ${
                       activeMenu === 'speed'
                         ? 'bg-[#7E57C2] border-[#7E57C2] text-white'
                         : 'border-[#353941] bg-[#1E2024]/80 text-[#B8BCC4] hover:text-white hover:border-[#4B505B]'
@@ -979,7 +986,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     title="Playback Speed"
                     aria-label="Playback speed"
                   >
-                    <SpeedIcon sx={{ fontSize: 14 }} />
+                    <SpeedIcon sx={{ fontSize: { xs: 12, sm: 14 } }} />
                     <span>{playbackSpeed === 1 ? '1x' : `${playbackSpeed}x`}</span>
                   </button>
 
@@ -1020,14 +1027,14 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
                     toggleFullscreen();
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className="text-[#B8BCC4] hover:text-white p-1 sm:p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer ml-0.5"
+                  className="text-[#B8BCC4] hover:text-white p-0.5 sm:p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer shrink-0 ml-0.5"
                   aria-label={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
                   title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
                 >
                   {isFullscreen ? (
-                    <FullscreenExitIcon fontSize="small" />
+                    <FullscreenExitIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                   ) : (
-                    <FullscreenIcon fontSize="small" />
+                    <FullscreenIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
                   )}
                 </button>
               </div>
@@ -1037,24 +1044,24 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
 
         {/* Modal Metadata Footer (Hidden during edge-to-edge fullscreen) */}
         {!isFullscreen && (
-          <div className="p-3 sm:p-4 bg-[#1E2024] border-t border-[#353941] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-[#B8BCC4]">
-            <div className="flex items-center gap-2 truncate">
-              <span className="text-white font-medium">{movie.title}</span>
-              <span>({movie.year || movie.releaseYear || 2024})</span>
+          <div className="p-3 sm:p-4 bg-[#1E2024] border-t border-[#353941] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-[#B8BCC4] max-w-full overflow-hidden">
+            <div className="flex items-center gap-2 truncate min-w-0">
+              <span className="text-white font-medium truncate">{movie.title}</span>
+              <span className="shrink-0">({movie.year || movie.releaseYear || 2024})</span>
               {movie.director || movie.filmmakerName ? (
                 <span className="text-[#8A8F99] truncate">
                   • Directed by {movie.director || movie.filmmakerName}
                 </span>
               ) : null}
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] px-2 py-0.5 rounded border border-[#353941] text-[#7E57C2] font-mono">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap shrink-0">
+              <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded border border-[#353941] text-[#7E57C2] font-mono">
                 {isM3u8 ? 'HLS ADAPTIVE' : 'DIRECT MP4'}
               </span>
               {movie.genres?.slice(0, 3).map((g) => (
                 <span
                   key={g}
-                  className="px-2 py-0.5 bg-[#282B30] border border-[#353941] rounded text-[#B8BCC4]"
+                  className="text-[10px] sm:text-xs px-2 py-0.5 bg-[#282B30] border border-[#353941] rounded text-[#B8BCC4]"
                 >
                   {g}
                 </span>
