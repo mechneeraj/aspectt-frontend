@@ -20,6 +20,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { useWatchlist, AVATAR_OPTIONS } from '../context/WatchlistContext';
 import { useAuth } from '../context/AuthContext';
 import { movies } from '../data/movies';
+import FilmSubmissionModal from '../components/FilmSubmissionModal';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ export default function Profile() {
   // Active interactive modal/panel state
   const [activeModal, setActiveModal] = useState(null); // 'profile' | 'subscription' | 'watchlist' | 'language' | 'about' | 'help' | 'logout' | 'auth' | null
   const [aboutTab, setAboutTab] = useState('about'); // 'about' | 'privacy' | 'terms'
+  const [isSubmitFilmOpen, setIsSubmitFilmOpen] = useState(false);
 
   // Auth form state (Login & Registration)
   const [authTab, setAuthTab] = useState('login'); // 'login' | 'register'
@@ -269,11 +271,20 @@ export default function Profile() {
                       >
                         <EditOutlinedIcon sx={{ fontSize: 17 }} />
                       </button>
+                      {/* Desktop / Tablet: Member Tag next to name */}
+                      <span className="hidden sm:inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#1E2024] border border-[#353941] text-[#7E57C2]">
+                        {isSubscribed ? `${subscription?.planName || 'ACTIVE'} MEMBER` : 'FREE GUEST'}
+                      </span>
+                    </div>
+
+                    {/* Mobile Only: Member Tag below the name and above the plan */}
+                    <div className="sm:hidden flex items-center justify-center mt-1.5 mb-1">
                       <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#1E2024] border border-[#353941] text-[#7E57C2]">
                         {isSubscribed ? `${subscription?.planName || 'ACTIVE'} MEMBER` : 'FREE GUEST'}
                       </span>
                     </div>
-                    {/* Mobile: Plan name directly under the name */}
+
+                    {/* Mobile: Plan name directly under the tag */}
                     <div className="sm:hidden text-xs text-[#B8BCC4] mt-1 font-medium">
                       <span className="text-[#8A8F99]">Plan: </span>
                       <strong className={isSubscribed ? 'text-white' : 'text-[#8A8F99]'}>
@@ -1030,10 +1041,7 @@ export default function Profile() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        setActiveModal(null);
-                        navigate('/#screener-submission');
-                      }}
+                      onClick={() => setIsSubmitFilmOpen(true)}
                       className="px-3 py-1.5 bg-[#7E57C2] hover:bg-[#6D48B5] text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-sm"
                     >
                       Submit Film
@@ -1474,6 +1482,12 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      {/* Film Submission Dialog Modal (Same modal as Home page) */}
+      <FilmSubmissionModal
+        isOpen={isSubmitFilmOpen}
+        onClose={() => setIsSubmitFilmOpen(false)}
+      />
 
     </div>
   );
