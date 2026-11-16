@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import SplashIntro from './components/SplashIntro';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -18,6 +19,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#1E2024] text-white flex flex-col font-sans">
+      {/* 2-Second Cinema Intro Splash Animation (Plays once per browser session) */}
+      <SplashIntro />
+
       {/* Global Scroll-to-Top on Route Change */}
       <ScrollToTop />
 
