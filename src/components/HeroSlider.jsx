@@ -245,10 +245,10 @@ export default function HeroSlider({ featuredMovies }) {
                 draggable={false}
               />
 
-              {/* Front Card Action Buttons Overlay (Guaranteed contrast on both dark & bright posters via local pill) */}
+              {/* Front Card Action Buttons Overlay (Guaranteed contrast & equal size on mobile & desktop) */}
               {isFront && (
-                <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-8 md:left-8 z-10 pointer-events-auto">
-                  <div className="flex items-center gap-2 sm:gap-2.5 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl bg-black/50 backdrop-blur-md border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:right-auto sm:bottom-6 sm:left-6 md:bottom-8 md:left-8 z-10 pointer-events-auto">
+                  <div className="p-1 sm:p-1.5 md:p-2 rounded-xl sm:rounded-2xl bg-black/50 backdrop-blur-md border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.6)] w-full sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -259,10 +259,10 @@ export default function HeroSlider({ featuredMovies }) {
                         }
                         navigate(`/movie/${movie.id}?play=true`);
                       }}
-                      className="inline-flex items-center gap-2 px-4.5 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] active:bg-[#5B21B6] text-white font-semibold text-xs sm:text-sm tracking-wide transition-all duration-150 cursor-pointer border border-white/25 shadow-[0_6px_20px_rgba(0,0,0,0.65)] active:scale-95"
+                      className="w-full sm:w-32 sm:min-w-[128px] h-10 sm:h-11 md:h-12 px-3 sm:px-5 rounded-lg sm:rounded-xl flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold tracking-wide whitespace-nowrap bg-[#7C3AED] hover:bg-[#6D28D9] active:bg-[#5B21B6] text-white border border-white/25 shadow-[0_6px_20px_rgba(0,0,0,0.65)] transition-all duration-150 cursor-pointer active:scale-95"
                       aria-label={`Play ${movie.title}`}
                     >
-                      <PlayArrowIcon fontSize="small" />
+                      <PlayArrowIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                       <span>Play</span>
                     </button>
 
@@ -271,10 +271,10 @@ export default function HeroSlider({ featuredMovies }) {
                         e.stopPropagation();
                         navigate(`/movie/${movie.id}`);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 sm:px-4.5 sm:py-2.5 rounded-lg sm:rounded-xl bg-[#18181B] hover:bg-[#27272A] active:bg-[#09090B] text-white font-medium text-xs sm:text-sm tracking-wide transition-all duration-150 border border-white/30 cursor-pointer shadow-[0_6px_20px_rgba(0,0,0,0.65)] active:scale-95"
+                      className="w-full sm:w-32 sm:min-w-[128px] h-10 sm:h-11 md:h-12 px-3 sm:px-5 rounded-lg sm:rounded-xl flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold tracking-wide whitespace-nowrap bg-[#18181B] hover:bg-[#27272A] active:bg-[#09090B] text-white border border-white/30 shadow-[0_6px_20px_rgba(0,0,0,0.65)] transition-all duration-150 cursor-pointer active:scale-95"
                       aria-label={`View details for ${movie.title}`}
                     >
-                      <InfoOutlinedIcon fontSize="small" className="text-white/80" />
+                      <InfoOutlinedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} className="text-white/80" />
                       <span>Details</span>
                     </button>
                   </div>

@@ -21,9 +21,9 @@ export function MovieCardSkeleton() {
 export function HeroSliderSkeleton() {
   return (
     <div className="w-full bg-[#282B30] border border-[#353941] rounded-xl sm:rounded-2xl p-6 sm:p-8 min-h-[350px] md:h-[420px] lg:h-[450px] animate-pulse flex flex-col justify-end relative overflow-hidden">
-      <div className="flex gap-2.5 z-10 p-1.5 rounded-xl bg-black/40 border border-white/5 w-fit">
-        <div className="h-10 w-24 bg-[#7C3AED]/40 rounded-lg" />
-        <div className="h-10 w-24 bg-[#18181B] border border-white/10 rounded-lg" />
+      <div className="p-1 sm:p-1.5 md:p-2 rounded-xl sm:rounded-2xl bg-black/40 border border-white/5 w-[calc(100%-24px)] max-w-xs sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 z-10">
+        <div className="h-10 sm:h-11 md:h-12 w-full sm:w-32 bg-[#7C3AED]/40 rounded-lg sm:rounded-xl" />
+        <div className="h-10 sm:h-11 md:h-12 w-full sm:w-32 bg-[#18181B] border border-white/10 rounded-lg sm:rounded-xl" />
       </div>
     </div>
   );
