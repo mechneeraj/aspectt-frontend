@@ -13,7 +13,7 @@ import { useWatchlist } from '../context/WatchlistContext';
 
 export default function ProfileDropdown() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout, openAuthModal } = useAuth();
+  const { user, isAuthenticated, isSubscribed, logout, openAuthModal } = useAuth();
   const { watchlist, showToast, userAvatar } = useWatchlist();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -158,7 +158,7 @@ export default function ProfileDropdown() {
                       {user?.name}
                     </p>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#1E2024] border border-[#353941] text-[#7E57C2]">
-                      {user?.subscriptionTier === 'pro' ? 'PRO' : 'MEMBER'}
+                      {isSubscribed ? 'PRO' : 'FREE'}
                     </span>
                   </div>
                   <p className="text-xs text-[#8A8F99] font-mono truncate mt-0.5">

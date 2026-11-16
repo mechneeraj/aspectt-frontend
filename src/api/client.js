@@ -376,5 +376,36 @@ export const authApi = {
   },
 };
 
+/**
+ * 5. Subscription APIs
+ * Live status checking, payment order creation, and plan activation
+ */
+export const subscriptionApi = {
+  /**
+   * GET /api/subscription/status
+   */
+  getStatus: async () => {
+    return await client.get('/subscription/status');
+  },
+
+  /**
+   * POST /api/subscription/create-order
+   */
+  createOrder: async (planName = 'MONTHLY') => {
+    return await client.post('/subscription/create-order', { planName });
+  },
+
+  /**
+   * POST /api/subscription/activate
+   */
+  activatePlan: async ({ planName = 'MONTHLY', paymentReference, orderId } = {}) => {
+    return await client.post('/subscription/activate', {
+      planName,
+      paymentReference,
+      orderId,
+    });
+  },
+};
+
 export default client;
 

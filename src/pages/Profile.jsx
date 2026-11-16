@@ -23,7 +23,7 @@ import { movies } from '../data/movies';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isSubscribed, subscription, refreshSubscription, logout } = useAuth();
   const {
     watchlist,
     watchlistMovies,
@@ -50,23 +50,51 @@ export default function Profile() {
   const [authError, setAuthError] = useState('');
 
   // Profile edit form state
-  const [editName, setEditName] = useState(userProfile?.name || '');
-  const [editEmail, setEditEmail] = useState(userProfile?.email || '');
-  const [editPhone, setEditPhone] = useState(userProfile?.phone || '+1 (555) 382-9014');
+  const [editName, setEditName] = useState(userProfile?.name || user?.name || '');
+  const [editEmail, setEditEmail] = useState(userProfile?.email || user?.email || '');
+  const [editPhone, setEditPhone] = useState(userProfile?.phone || user?.phone || '');
   const [selectedAvatar, setSelectedAvatar] = useState(
     () => AVATAR_OPTIONS.find((a) => a.src === userAvatar) || userProfile?.avatar || AVATAR_OPTIONS[0]
   );
 
   // Synchronize profile form fields when auth state or user profile changes
   useEffect(() => {
-    if (userProfile) {
-      setEditName(userProfile.name || '');
-      setEditEmail(userProfile.email || '');
-      setEditPhone(userProfile.phone || '+1 (555) 382-9014');
-      const avatar = AVATAR_OPTIONS.find((a) => a.src === userAvatar) || userProfile.avatar || AVATAR_OPTIONS[0];
+    if (userProfile || user) {
+      setEditName(userProfile?.name || user?.name || '');
+      setEditEmail(userProfile?.email || user?.email || '');
+      setEditPhone(userProfile?.phone || user?.phone || '');
+      const avatar = AVATAR_OPTIONS.find((a) => a.src === userAvatar) || userProfile?.avatar || AVATAR_OPTIONS[0];
       setSelectedAvatar(avatar);
     }
-  }, [userProfile, userAvatar]);
+  }, [userProfile, user, userAvatar]);
+
+  // Ensure live subscription details are up-to-date
+  useEffect(() => {
+    if (isAuthenticated && refreshSubscription) {
+      refreshSubscription();
+    }
+  }, [isAuthenticated, refreshSubscription]);
+
+  // Calculate days left for active subscription
+  const getDaysLeft = (expiryDate) => {
+    if (!expiryDate) return null;
+    try {
+      const diff = new Date(expiryDate) - new Date();
+      return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    } catch {
+      return null;
+    }
+  };
+
+  const getPlanDisplay = () => {
+    if (!isSubscribed) return 'No Active Plan';
+    const planName = subscription?.planName === 'YEARLY' ? 'Yearly Plan' : 'Monthly Plan';
+    const days = getDaysLeft(subscription?.expiryDate);
+    if (days !== null) {
+      return `${planName} (${days} ${days === 1 ? 'day' : 'days'} left)`;
+    }
+    return planName;
+  };
 
   const savedMovies =
     watchlistMovies && watchlistMovies.length > 0
@@ -105,9 +133,9 @@ export default function Profile() {
   };
 
   const openEditProfile = () => {
-    setEditName(userProfile?.name || '');
-    setEditEmail(userProfile?.email || '');
-    setEditPhone(userProfile?.phone || '');
+    setEditName(userProfile?.name || user?.name || '');
+    setEditEmail(userProfile?.email || user?.email || '');
+    setEditPhone(userProfile?.phone || user?.phone || '');
     const current = AVATAR_OPTIONS.find((a) => a.src === userAvatar) || userProfile?.avatar || AVATAR_OPTIONS[0];
     setSelectedAvatar(current);
     setActiveModal('profile');
@@ -126,10 +154,6 @@ export default function Profile() {
     }
     if (!editEmail.trim()) {
       showToast('Please provide a valid email');
-      return;
-    }
-    if (!editPhone.trim()) {
-      showToast('Please provide a mobile number');
       return;
     }
 
@@ -246,13 +270,23 @@ export default function Profile() {
                         <EditOutlinedIcon sx={{ fontSize: 17 }} />
                       </button>
                       <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#1E2024] border border-[#353941] text-[#7E57C2]">
-                        {user?.subscriptionTier === 'pro' || userProfile?.plan?.includes('Ultra') ? 'PREMIUM' : 'MEMBER'}
+                        {isSubscribed ? `${subscription?.planName || 'ACTIVE'} MEMBER` : 'FREE GUEST'}
                       </span>
                     </div>
                     {/* Mobile: Plan name directly under the name */}
                     <div className="sm:hidden text-xs text-[#B8BCC4] mt-1 font-medium">
                       <span className="text-[#8A8F99]">Plan: </span>
-                      <strong className="text-white">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</strong>
+                      <strong className={isSubscribed ? 'text-white' : 'text-[#8A8F99]'}>
+                        {getPlanDisplay()}
+                      </strong>
+                      {!isSubscribed && (
+                        <button
+                          onClick={() => navigate('/subscription')}
+                          className="text-[#7E57C2] hover:text-[#9575CD] font-medium text-xs underline cursor-pointer ml-1.5"
+                        >
+                          Subscribe
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -274,13 +308,26 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#B8BCC4] font-mono">
                     <PhoneAndroidOutlinedIcon sx={{ fontSize: 14 }} className="text-[#8A8F99]" />
-                    <span>{userProfile?.phone || '+1 (555) 382-9014'}</span>
+                    <span>{user?.phone || userProfile?.phone || 'Not provided'}</span>
                   </div>
                 </div>
 
-                {/* PC and Tablet: Plan row at the bottom (hidden on mobile where it sits under the name) */}
+                {/* PC and Tablet: Plan row at the bottom (under mobile number) */}
                 <div className="hidden sm:flex items-center justify-start gap-2 mt-3 text-xs text-[#8A8F99] pt-2 border-t border-[#353941]/60">
-                  <span>Plan: <strong className="text-[#B8BCC4]">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</strong></span>
+                  <span>
+                    Plan:{' '}
+                    <strong className={isSubscribed ? 'text-white' : 'text-[#8A8F99]'}>
+                      {getPlanDisplay()}
+                    </strong>
+                  </span>
+                  {!isSubscribed && (
+                    <button
+                      onClick={() => navigate('/subscription')}
+                      className="text-[#7E57C2] hover:text-[#9575CD] font-medium text-xs underline cursor-pointer ml-1"
+                    >
+                      Subscribe
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -334,38 +381,21 @@ export default function Profile() {
         {/* Menu Items List Card */}
         <div className="bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden divide-y divide-[#353941]">
           
-          {/* Profile (Edit icon) Option - Only when Authenticated */}
-          {isAuthenticated && (
-            <button
-              onClick={openEditProfile}
-              className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#353941] transition-colors text-left group cursor-pointer"
-            >
-              <div className="flex items-center gap-3.5">
-                <div className="w-8 h-8 rounded-lg bg-[#1E2024] border border-[#353941] flex items-center justify-center text-[#B8BCC4] group-hover:text-white transition-colors">
-                  <EditOutlinedIcon fontSize="small" />
-                </div>
-                <span className="text-sm font-semibold text-white">Profile Details</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-[#B8BCC4]">
-                <span className="hidden sm:inline">Edit Avatar</span>
-                <ChevronRightIcon fontSize="small" className="text-[#8A8F99]" />
-              </div>
-            </button>
-          )}
-
           {/* 1. Subscription Details */}
           <button
-            onClick={() => setActiveModal('subscription')}
+            onClick={() => navigate('/subscription')}
             className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#353941] transition-colors text-left group cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
               <div className="w-8 h-8 rounded-lg bg-[#1E2024] border border-[#353941] flex items-center justify-center text-[#B8BCC4] group-hover:text-white transition-colors">
                 <SubscriptionsOutlinedIcon fontSize="small" />
               </div>
-              <span className="text-sm font-semibold text-white">Subscription Details</span>
+              <span className="text-sm font-semibold text-white">Subscription & Plans</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-[#B8BCC4]">
-              <span className="hidden sm:inline">Active</span>
+              <span className={isSubscribed ? 'text-emerald-400 font-medium' : 'text-[#8A8F99]'}>
+                {isSubscribed ? 'Active' : 'No Active Plan'}
+              </span>
               <ChevronRightIcon fontSize="small" className="text-[#8A8F99]" />
             </div>
           </button>
@@ -651,8 +681,7 @@ export default function Profile() {
                       type="tel"
                       value={editPhone}
                       onChange={(e) => setEditPhone(e.target.value)}
-                      required
-                      placeholder="e.g. +1 (555) 382-9014"
+                      placeholder="e.g. +91 98765 43210"
                       className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2] transition-colors font-mono"
                     />
                   </div>
@@ -699,17 +728,31 @@ export default function Profile() {
             <div className="p-5 space-y-4">
               <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs uppercase tracking-wider text-[#7E57C2] font-semibold">Active Plan</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-[#353941] text-white font-mono">$15.99 / mo</span>
+                  <span className="text-xs uppercase tracking-wider text-[#7E57C2] font-semibold">
+                    {isSubscribed ? 'Active Plan' : 'Plan Status'}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded bg-[#353941] text-white font-mono">
+                    {isSubscribed
+                      ? subscription?.expiryDate
+                        ? `${getDaysLeft(subscription.expiryDate)} days left`
+                        : 'Active'
+                      : 'Free'}
+                  </span>
                 </div>
-                <h4 className="text-lg font-bold text-white">{userProfile?.plan || 'Aspectt Ultra (4K UHD)'}</h4>
-                <p className="text-xs text-[#B8BCC4] mt-1">Next automatic renewal: Dec 1, 2026</p>
+                <h4 className="text-lg font-bold text-white">
+                  {getPlanDisplay()}
+                </h4>
+                <p className="text-xs text-[#B8BCC4] mt-1">
+                  {isSubscribed && (subscription?.expiryDate || subscription?.expiresAt)
+                    ? `Next renewal / expiration: ${new Date(subscription.expiryDate || subscription.expiresAt).toLocaleDateString()}`
+                    : 'Subscribe to unlock the full cinema catalog'}
+                </p>
               </div>
 
               <div className="space-y-2 text-xs text-[#B8BCC4]">
                 <div className="flex justify-between py-1 border-b border-[#353941]">
                   <span>Resolution</span>
-                  <span className="text-white font-medium">4K Ultra HD + HDR</span>
+                  <span className="text-white font-medium">1080p FHD &amp; 4K UHD</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[#353941]">
                   <span>Concurrent Screens</span>
@@ -717,11 +760,11 @@ export default function Profile() {
                 </div>
                 <div className="flex justify-between py-1 border-b border-[#353941]">
                   <span>Audio Quality</span>
-                  <span className="text-white font-medium">Dolby Atmos Spatial Audio</span>
+                  <span className="text-white font-medium">Lossless Stereo &amp; 5.1 Surround</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Ad Experience</span>
-                  <span className="text-white font-medium">100% Ad-Free Matte Stream</span>
+                  <span className="text-white font-medium">100% Ad-Free Cinema Stream</span>
                 </div>
               </div>
 
@@ -729,11 +772,11 @@ export default function Profile() {
                 <button
                   onClick={() => {
                     setActiveModal(null);
-                    showToast('Subscription is active and up to date');
+                    navigate('/subscription');
                   }}
-                  className="w-full py-2.5 rounded-lg bg-[#1E2024] border border-[#353941] hover:border-[#454A54] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer"
+                  className="w-full py-2.5 rounded-lg bg-[#7E57C2] hover:bg-[#6C47AF] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer"
                 >
-                  Manage Payment Method
+                  {isSubscribed ? 'Manage Subscription & Invoices' : 'View Subscription Plans'}
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
 import CloseIcon from '@mui/icons-material/Close';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -84,7 +85,8 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
   const [actualLevel, setActualLevel] = useState(-1);
 
   // Auth & Secure Playback state
-  const { logout, openAuthModal, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const { logout, openAuthModal, isAuthenticated, isSubscribed, setPendingPlayback } = useAuth();
   const [streamUrl, setStreamUrl] = useState('');
   const [isLoadingStream, setIsLoadingStream] = useState(false);
   const [streamError, setStreamError] = useState('');
@@ -109,10 +111,26 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
       return;
     }
 
+    // Trailers do not require active subscription
+    if (mode === 'trailer' && (movie.trailerUrl || movie.videoStreamUrl)) {
+      setStreamUrl((movie.trailerUrl || movie.videoStreamUrl || '').trim());
+      setIsLoadingStream(false);
+      return;
+    }
+
     // For movies: Enforce authentication gate
     if (!isAuthenticated) {
       onClose();
+      if (setPendingPlayback) setPendingPlayback(movie.id || movie);
       openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+      return;
+    }
+
+    // For full feature movies: Enforce subscription gate
+    if (mode === 'feature' && !isSubscribed) {
+      onClose();
+      if (setPendingPlayback) setPendingPlayback(movie.id || movie);
+      navigate('/subscription');
       return;
     }
 
@@ -140,6 +158,13 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
           openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
           return;
         }
+        if (err?.status === 403 || err?.data?.code === 'SUBSCRIPTION_REQUIRED') {
+          // Subscription required
+          onClose();
+          if (setPendingPlayback) setPendingPlayback(movie.id || movie);
+          navigate('/subscription');
+          return;
+        }
         setHasError(true);
         setStreamError(err?.message || 'Failed to authorize video stream.');
       } finally {
@@ -154,7 +179,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
     return () => {
       isMounted = false;
     };
-  }, [isOpen, movie?.id, mode, isAuthenticated, retryKey, onClose, logout, openAuthModal]);
+  }, [isOpen, movie?.id, mode, isAuthenticated, isSubscribed, retryKey, onClose, logout, openAuthModal, navigate, setPendingPlayback]);
 
   // Close popover menus when clicking outside
   useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authApi, getStoredToken, setStoredToken, removeStoredToken } from '../api/client';
+import { authApi, subscriptionApi, getStoredToken, setStoredToken, removeStoredToken } from '../api/client';
 import { DEFAULT_AVATAR_URL, AVATAR_OPTIONS } from '../data/avatars';
 
 const USER_STORAGE_KEY = 'aspectt_user';
@@ -23,6 +23,11 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // Live Subscription states
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionHistory, setSubscriptionHistory] = useState([]);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false);
 
   // Global Auth Modal state accessible from Navbar, Profile, or anywhere
   const [authModal, setAuthModal] = useState({
@@ -64,6 +69,67 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const isAuthenticated = Boolean(token && user);
+
+  // Active subscription check (unlocked only if active plan is present and unexpired)
+  const isSubscribed = Boolean(
+    isAuthenticated &&
+      subscription &&
+      subscription.status === 'ACTIVE' &&
+      new Date(subscription.expiryDate) > new Date()
+  );
+
+  /**
+   * Fetch current subscription status from backend
+   */
+  const refreshSubscription = useCallback(async () => {
+    const currentToken = getStoredToken();
+    if (!currentToken) {
+      setSubscription(null);
+      setSubscriptionHistory([]);
+      return null;
+    }
+
+    try {
+      setIsLoadingSubscription(true);
+      const res = await subscriptionApi.getStatus();
+      if (res?.success) {
+        setSubscription(res.subscription || null);
+        setSubscriptionHistory(Array.isArray(res.history) ? res.history : []);
+        return res;
+      }
+    } catch (err) {
+      console.warn('Subscription status check warning:', err?.message || err);
+    } finally {
+      setIsLoadingSubscription(false);
+    }
+    return null;
+  }, []);
+
+  /**
+   * Activate a subscription plan (Monthly or Yearly)
+   */
+  const activateSubscription = useCallback(
+    async (planName = 'MONTHLY') => {
+      setLoading(true);
+      try {
+        const res = await subscriptionApi.activatePlan({ planName });
+        if (res?.success) {
+          if (res.subscription) {
+            setSubscription(res.subscription);
+          }
+          if (res.historyItem) {
+            setSubscriptionHistory((prev) => [res.historyItem, ...prev]);
+          }
+          await refreshSubscription();
+          return res;
+        }
+        throw new Error(res?.message || 'Failed to activate plan.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [refreshSubscription]
+  );
 
   /**
    * Save user safely to localStorage and React state
@@ -139,8 +205,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       refreshUser();
+      refreshSubscription();
+    } else {
+      setSubscription(null);
+      setSubscriptionHistory([]);
     }
-  }, [token, refreshUser]);
+  }, [token, refreshUser, refreshSubscription]);
 
   /**
    * Login handler
@@ -155,6 +225,8 @@ export const AuthProvider = ({ children }) => {
           setToken(res.token);
           persistUser(res.user);
           closeAuthModal();
+          // Fetch user's live subscription status (if any)
+          refreshSubscription();
           return res;
         }
         throw new Error(res?.message || 'Authentication failed. Please try again.');
@@ -162,7 +234,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     },
-    [persistUser, closeAuthModal]
+    [persistUser, closeAuthModal, refreshSubscription]
   );
 
   /**
@@ -178,6 +250,8 @@ export const AuthProvider = ({ children }) => {
           setToken(res.token);
           persistUser(res.user);
           closeAuthModal();
+          setSubscription(null);
+          setSubscriptionHistory([]);
           return res;
         }
         throw new Error(res?.message || 'Registration failed. Please try again.');
@@ -197,6 +271,7 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Verify Signup OTP and create permanent User
+   * Newly registered users do NOT receive active subscription automatically.
    */
   const verifyOtp = useCallback(
     async ({ email, otp, avatar }) => {
@@ -207,6 +282,9 @@ export const AuthProvider = ({ children }) => {
           setStoredToken(res.token);
           setToken(res.token);
           persistUser(res.user);
+          // New signups start with no active subscription
+          setSubscription(null);
+          setSubscriptionHistory([]);
           return res;
         }
         throw new Error(res?.message || 'Verification failed. Please try again.');
@@ -263,6 +341,8 @@ export const AuthProvider = ({ children }) => {
     // Reset reactive states immediately
     setToken(null);
     setUser(null);
+    setSubscription(null);
+    setSubscriptionHistory([]);
     closeAuthModal();
   }, [closeAuthModal]);
 
@@ -291,6 +371,12 @@ export const AuthProvider = ({ children }) => {
         user,
         isAuthenticated,
         loading,
+        subscription,
+        isSubscribed,
+        subscriptionHistory,
+        isLoadingSubscription,
+        refreshSubscription,
+        activateSubscription,
         login,
         register,
         sendOtp,

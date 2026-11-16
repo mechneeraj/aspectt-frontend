@@ -26,6 +26,7 @@ export default function MovieDetails() {
   const { isInWatchlist, toggleWatchlist, showToast } = useWatchlist();
   const {
     isAuthenticated,
+    isSubscribed,
     openAuthModal,
     pendingPlayback,
     setPendingPlayback,
@@ -77,20 +78,28 @@ export default function MovieDetails() {
         pendingPlayback.slug === movie.slug);
 
     if (shouldAutoPlay || isPendingThisMovie) {
-      if (isAuthenticated) {
-        if (isPendingThisMovie) clearPendingPlayback();
-        setPlayerState({ isOpen: true, mode: 'feature' });
-      } else {
+      if (!isAuthenticated) {
         setPendingPlayback(movie.id || movie);
         openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+      } else if (!isSubscribed) {
+        setPendingPlayback(movie.id || movie);
+        navigate('/subscription');
+      } else {
+        if (isPendingThisMovie) clearPendingPlayback();
+        setPlayerState({ isOpen: true, mode: 'feature' });
       }
     }
-  }, [movie, location.search, isAuthenticated, pendingPlayback, clearPendingPlayback, setPendingPlayback, openAuthModal]);
+  }, [movie, location.search, isAuthenticated, isSubscribed, pendingPlayback, clearPendingPlayback, setPendingPlayback, openAuthModal, navigate]);
 
   const handlePlayClick = () => {
     if (!isAuthenticated) {
       setPendingPlayback(movie.id || movie);
       openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+      return;
+    }
+    if (!isSubscribed) {
+      setPendingPlayback(movie.id || movie);
+      navigate('/subscription');
       return;
     }
     setPlayerState({ isOpen: true, mode: 'feature' });

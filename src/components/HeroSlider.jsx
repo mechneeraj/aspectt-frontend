@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function HeroSlider({ featuredMovies }) {
   const navigate = useNavigate();
-  const { isAuthenticated, openAuthModal, setPendingPlayback } = useAuth();
+  const { isAuthenticated, isSubscribed, openAuthModal, setPendingPlayback } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -255,6 +255,11 @@ export default function HeroSlider({ featuredMovies }) {
                         if (!isAuthenticated) {
                           setPendingPlayback(movie.id || movie);
                           openAuthModal('login', 'Sign in or create a free account to watch films on Aspectt.');
+                          return;
+                        }
+                        if (!isSubscribed) {
+                          setPendingPlayback(movie.id || movie);
+                          navigate('/subscription');
                           return;
                         }
                         navigate(`/movie/${movie.id}?play=true`);

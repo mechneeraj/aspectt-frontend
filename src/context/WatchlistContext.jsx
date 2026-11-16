@@ -12,6 +12,7 @@ export const WatchlistProvider = ({ children }) => {
     token,
     user,
     isAuthenticated,
+    isSubscribed,
     login: authLogin,
     register: authRegister,
     logout: authLogout,
@@ -51,7 +52,7 @@ export const WatchlistProvider = ({ children }) => {
     ? {
         name: user.name || 'Aspectt Member',
         email: user.email || '',
-        phone: user.phone || '+1 (555) 382-9014',
+        phone: user.phone || '',
         avatar:
           AVATAR_OPTIONS.find((a) => a.src === user.avatarUrl) || {
             id: 'avatar-user',
@@ -60,9 +61,9 @@ export const WatchlistProvider = ({ children }) => {
             color: '#7E57C2',
           },
         plan:
-          user.subscriptionTier === 'pro'
-            ? 'Aspectt Ultra (4K UHD)'
-            : 'Aspectt Basic',
+          isSubscribed || user.subscriptionTier?.toLowerCase() === 'pro'
+            ? 'Active Plan'
+            : 'No Active Plan',
         language:
           user.appLanguage === 'en'
             ? 'English (US)'
@@ -196,7 +197,7 @@ export const WatchlistProvider = ({ children }) => {
     authUpdateUser({
       name: newDetails.name || user?.name,
       avatarUrl,
-      subscriptionTier: newDetails.plan === 'Aspectt Ultra (4K UHD)' ? 'pro' : 'basic',
+      phone: newDetails.phone !== undefined ? newDetails.phone : user?.phone,
       appLanguage: newDetails.language === 'English (US)' ? 'en' : newDetails.language,
     });
 
@@ -207,9 +208,9 @@ export const WatchlistProvider = ({ children }) => {
       try {
         await authApi.updateProfile({
           name: newDetails.name,
+          phone: newDetails.phone,
           avatarUrl,
           appLanguage: newDetails.language === 'English (US)' ? 'en' : newDetails.language,
-          subscriptionTier: newDetails.plan === 'Aspectt Ultra (4K UHD)' ? 'pro' : 'basic',
         });
       } catch (err) {
         console.warn('Backend profile update skipped:', err.message);

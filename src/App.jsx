@@ -8,6 +8,7 @@ import Explore from './pages/Explore';
 import MovieDetails from './pages/MovieDetails';
 import Profile from './pages/Profile';
 import BehindTheLens from './pages/BehindTheLens';
+import Subscription from './pages/Subscription';
 import Toast from './components/Toast';
 import AuthModal from './components/AuthModal';
 import { useWatchlist } from './context/WatchlistContext';
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/movie/:id" element={<MovieDetails />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/behind-the-lens" element={<BehindTheLens />} />
+          <Route path="/subscription" element={<Subscription />} />
           {/* Catch-all redirect to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
