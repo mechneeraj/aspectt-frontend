@@ -40,7 +40,7 @@ export default function SplashIntro() {
     setIsFadingOut(true);
     setTimeout(() => {
       setIsVisible(false);
-    }, 280);
+    }, 1000);
   }, []);
 
   useEffect(() => {
@@ -50,15 +50,15 @@ export default function SplashIntro() {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Stage 3 fade-out at 1.8s
+    // Stage 3 fade-out at 2s
     const fadeTimer = setTimeout(() => {
       setIsFadingOut(true);
-    }, 1800);
+    }, 2000);
 
-    // Complete unmount at 2.1s
+    // Complete unmount at 4s
     const unmountTimer = setTimeout(() => {
       setIsVisible(false);
-    }, 2100);
+    }, 4000);
 
     // Keyboard shortcut to dismiss (Escape, Space, Enter)
     const handleKeyDown = (e) => {
@@ -81,11 +81,10 @@ export default function SplashIntro() {
   return (
     <div
       onClick={handleDismiss}
-      className={`fixed inset-0 z-[99999] bg-[#09090B] flex flex-col items-center justify-center select-none overflow-hidden cursor-pointer transition-all duration-300 ${
-        isFadingOut
-          ? 'opacity-0 scale-[1.03] pointer-events-none'
-          : 'opacity-100 scale-100 pointer-events-auto'
-      }`}
+      className={`fixed inset-0 z-[99999] bg-[#09090B] flex flex-col items-center justify-center select-none overflow-hidden cursor-pointer transition-all duration-300 ${isFadingOut
+        ? 'opacity-0 scale-[1.03] pointer-events-none'
+        : 'opacity-100 scale-100 pointer-events-auto'
+        }`}
       aria-label="Aspectt Intro Splash"
       role="banner"
     >
@@ -291,7 +290,7 @@ export default function SplashIntro() {
 
       {/* Centerpiece Logo Container */}
       <div className="relative z-10 w-full max-w-[320px] xs:max-w-[380px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[620px] px-4 flex flex-col items-center justify-center">
-        
+
         {/* Main Kinetic SVG Wordmark */}
         <div className="relative w-full overflow-visible">
           <svg
@@ -436,13 +435,13 @@ export default function SplashIntro() {
         </div>
 
         {/* Studio Sub-label */}
-        <div className="mt-4 flex items-center gap-2 tracking-[0.28em] text-[9px] sm:text-[11px] font-semibold text-[#8A8F99] uppercase opacity-75">
+        {/* <div className="mt-4 flex items-center gap-2 tracking-[0.28em] text-[9px] sm:text-[11px] font-semibold text-[#8A8F99] uppercase opacity-75">
           <span>Cinema</span>
           <span className="w-1 h-1 rounded-full bg-[#7C3AED]" />
           <span>Auteur</span>
           <span className="w-1 h-1 rounded-full bg-[#7C3AED]" />
           <span>Archives</span>
-        </div>
+        </div> */}
       </div>
 
       {/* Discrete Skip Button */}
