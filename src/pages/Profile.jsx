@@ -24,7 +24,7 @@ import FilmSubmissionModal from '../components/FilmSubmissionModal';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isSubscribed, subscription, refreshSubscription, logout } = useAuth();
+  const { user, isAuthenticated, isSubscribed, subscription, refreshSubscription, logout, openAuthModal } = useAuth();
   const {
     watchlist,
     watchlistMovies,
@@ -249,6 +249,18 @@ export default function Profile() {
       setAuthError('Please fill out all required fields.');
       return;
     }
+
+    const hasMinLength = authPassword.length >= 6;
+    const hasUpper = /[A-Z]/.test(authPassword);
+    const hasLower = /[a-z]/.test(authPassword);
+    const hasNumber = /[0-9]/.test(authPassword);
+    const hasSymbol = /[^A-Za-z0-9]/.test(authPassword);
+
+    if (!hasMinLength || !hasUpper || !hasLower || !hasNumber || !hasSymbol) {
+      setAuthError('Password must be at least 6 characters and include an uppercase letter, a lowercase letter, a number, and a symbol.');
+      return;
+    }
+
     setAuthLoading(true);
     setAuthError('');
     try {
@@ -418,21 +430,13 @@ export default function Profile() {
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
-                onClick={() => {
-                  setAuthTab('login');
-                  setAuthError('');
-                  setActiveModal('auth');
-                }}
+                onClick={() => openAuthModal('login')}
                 className="px-5 py-2.5 rounded-xl bg-[#7E57C2] hover:bg-[#6D48B5] text-white text-xs font-semibold shadow-md shadow-[#7E57C2]/20 transition-all cursor-pointer"
               >
                 Sign In
               </button>
               <button
-                onClick={() => {
-                  setAuthTab('register');
-                  setAuthError('');
-                  setActiveModal('auth');
-                }}
+                onClick={() => openAuthModal('register')}
                 className="px-5 py-2.5 rounded-xl bg-[#1E2024] hover:bg-[#353941] border border-[#353941] text-white text-xs font-semibold transition-all cursor-pointer"
               >
                 Create Account
@@ -554,10 +558,7 @@ export default function Profile() {
             </button>
           ) : (
             <button
-              onClick={() => {
-                setAuthError('');
-                setActiveModal('auth');
-              }}
+              onClick={() => openAuthModal('login')}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#353941] transition-colors text-left group cursor-pointer border-t border-[#353941]"
             >
               <div className="flex items-center gap-3.5">
@@ -1604,9 +1605,9 @@ export default function Profile() {
           {/* 8. Sign In / Register Modal (Live PostgreSQL Auth) */}
           {activeModal === 'auth' && (
             <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-              <div className="w-full max-w-md bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="w-full max-w-md bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl flex flex-col max-h-[90dvh]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#353941] bg-[#222428]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#353941] bg-[#222428] shrink-0">
                   <div>
                     <h3 className="text-base font-bold text-white">
                       {authTab === 'login' ? 'Sign In to Aspectt' : 'Create Aspectt Account'}
@@ -1626,7 +1627,7 @@ export default function Profile() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-[#353941] bg-[#1E2024]">
+                <div className="flex border-b border-[#353941] bg-[#1E2024] shrink-0">
                   <button
                     type="button"
                     onClick={() => {
@@ -1655,79 +1656,90 @@ export default function Profile() {
                   </button>
                 </div>
 
-                {/* Demo Helper Banner */}
-                {authTab === 'login' && (
-                  <div className="mx-6 mt-4 p-3 bg-[#1E2024] border border-[#7E57C2]/40 rounded-lg flex items-center justify-between gap-3">
-                    <div className="text-[11px] text-[#B8BCC4] leading-tight">
-                      <span className="text-white font-medium block">Demo Cinephile Account</span>
-                      <span className="font-mono text-[#8A8F99]">alex@aspectt.com • Password123!</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={fillDemoCredentials}
-                      className="px-2.5 py-1 rounded bg-[#7E57C2]/20 hover:bg-[#7E57C2] text-[#7E57C2] hover:text-white border border-[#7E57C2]/40 text-[11px] font-semibold transition-colors flex-shrink-0 cursor-pointer"
-                    >
-                      Quick Fill
-                    </button>
-                  </div>
-                )}
-
-                {/* Form */}
+                {/* Form enclosing scrollable fields and pinned submit footer */}
                 <form
                   onSubmit={authTab === 'login' ? handleLoginSubmit : handleRegisterSubmit}
-                  className="p-6 space-y-4"
+                  className="flex flex-col flex-1 min-h-0 overflow-hidden"
                 >
-                  {authError && (
-                    <div className="p-3 rounded-lg bg-red-950/60 border border-red-800/80 text-red-200 text-xs">
-                      {authError}
-                    </div>
-                  )}
+                  <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-3.5 scrollbar-thin">
+                    {/* Demo Helper Banner */}
+                    {authTab === 'login' && (
+                      <div className="p-3 bg-[#1E2024] border border-[#7E57C2]/40 rounded-lg flex items-center justify-between gap-3">
+                        <div className="text-[11px] text-[#B8BCC4] leading-tight">
+                          <span className="text-white font-medium block">Demo Cinephile Account</span>
+                          <span className="font-mono text-[#8A8F99]">alex@aspectt.com • Password123!</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={fillDemoCredentials}
+                          className="px-2.5 py-1 rounded bg-[#7E57C2]/20 hover:bg-[#7E57C2] text-[#7E57C2] hover:text-white border border-[#7E57C2]/40 text-[11px] font-semibold transition-colors flex-shrink-0 cursor-pointer"
+                        >
+                          Quick Fill
+                        </button>
+                      </div>
+                    )}
 
-                  {authTab === 'register' && (
+                    {authError && (
+                      <div className="p-3 rounded-lg bg-red-950/60 border border-red-800/80 text-red-200 text-xs">
+                        {authError}
+                      </div>
+                    )}
+
+                    {authTab === 'register' && (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
+                          Your Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={authName}
+                          onChange={(e) => setAuthName(e.target.value)}
+                          placeholder="e.g. Alex Vance"
+                          className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
+                        />
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
-                        Your Name
+                        Email Address
                       </label>
                       <input
-                        type="text"
+                        type="email"
                         required
-                        value={authName}
-                        onChange={(e) => setAuthName(e.target.value)}
-                        placeholder="e.g. Alex Vance"
-                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        placeholder="alex@aspectt.com"
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2] font-mono"
                       />
                     </div>
-                  )}
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={authEmail}
-                      onChange={(e) => setAuthEmail(e.target.value)}
-                      placeholder="alex@aspectt.com"
-                      className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2] font-mono"
-                    />
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={authPassword}
+                        onChange={(e) => {
+                          setAuthPassword(e.target.value);
+                          setAuthError('');
+                        }}
+                        placeholder="••••••••••••"
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
+                      />
+                      {authTab === 'register' && (
+                        <p className="text-[11px] text-[#8A8F99] mt-1">
+                          Must be at least 6 characters (uppercase, lowercase, number & symbol)
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      value={authPassword}
-                      onChange={(e) => setAuthPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
-                    />
-                  </div>
-
-                  <div className="pt-2">
+                  {/* Pinned Action Area */}
+                  <div className="shrink-0 p-4 border-t border-[#353941] bg-[#222428]">
                     <button
                       type="submit"
                       disabled={authLoading}
