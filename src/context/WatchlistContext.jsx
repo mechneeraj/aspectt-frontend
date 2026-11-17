@@ -66,8 +66,8 @@ export const WatchlistProvider = ({ children }) => {
             : 'No Active Plan',
         language:
           user.appLanguage === 'en'
-            ? 'English (US)'
-            : user.appLanguage || 'English (US)',
+            ? 'English'
+            : user.appLanguage || 'English',
       }
     : null;
 
@@ -198,7 +198,7 @@ export const WatchlistProvider = ({ children }) => {
       name: newDetails.name || user?.name,
       avatarUrl,
       phone: newDetails.phone !== undefined ? newDetails.phone : user?.phone,
-      appLanguage: newDetails.language === 'English (US)' ? 'en' : newDetails.language,
+      appLanguage: (newDetails.language === 'English' || newDetails.language === 'English (US)') ? 'en' : newDetails.language,
     });
 
     showToast('Profile information updated successfully');
@@ -210,7 +210,7 @@ export const WatchlistProvider = ({ children }) => {
           name: newDetails.name,
           phone: newDetails.phone,
           avatarUrl,
-          appLanguage: newDetails.language === 'English (US)' ? 'en' : newDetails.language,
+          appLanguage: (newDetails.language === 'English' || newDetails.language === 'English (US)') ? 'en' : newDetails.language,
         });
       } catch (err) {
         console.warn('Backend profile update skipped:', err.message);

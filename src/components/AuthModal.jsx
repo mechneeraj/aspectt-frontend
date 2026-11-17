@@ -274,7 +274,7 @@ export default function AuthModal() {
                     key={avatar.id}
                     type="button"
                     onClick={() => setSelectedAvatar(avatar)}
-                    className={`relative p-2 rounded-xl flex flex-col items-center transition-all cursor-pointer border ${isSelected
+                    className={`relative p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer border ${isSelected
                       ? 'bg-[#7E57C2]/15 border-[#7E57C2] scale-105 shadow-lg shadow-[#7E57C2]/20'
                       : 'bg-[#1E2024] border-[#353941] hover:border-[#7E57C2]/50 hover:bg-[#1E2024]/80'
                       }`}
@@ -282,12 +282,12 @@ export default function AuthModal() {
                     <div className="relative">
                       <Avatar
                         src={avatar.src}
-                        alt={avatar.name}
+                        alt="Avatar"
                         sx={{
-                          width: 52,
-                          height: 52,
+                          width: 56,
+                          height: 56,
                           bgcolor: avatar.color || '#7E57C2',
-                          borderRadius: '12px',
+                          borderRadius: '14px',
                           border: isSelected ? '2px solid #7E57C2' : '1px solid #353941',
                         }}
                       >
@@ -299,21 +299,9 @@ export default function AuthModal() {
                         </div>
                       )}
                     </div>
-                    <span
-                      className={`text-[11px] mt-1.5 font-medium truncate max-w-full ${isSelected ? 'text-white font-semibold' : 'text-[#8A8F99]'
-                        }`}
-                    >
-                      {avatar.name}
-                    </span>
                   </button>
                 );
               })}
-            </div>
-
-            {/* Selected Persona Preview */}
-            <div className="flex items-center justify-center gap-2 mb-5 py-2 px-3 bg-[#1E2024] border border-[#353941] rounded-xl text-xs text-[#B8BCC4]">
-              <span>Selected Persona:</span>
-              <strong className="text-white font-semibold">{selectedAvatar.name}</strong>
             </div>
 
             {/* Actions: Save & Continue + Skip */}

@@ -39,9 +39,61 @@ export default function Profile() {
   } = useWatchlist();
 
   // Active interactive modal/panel state
-  const [activeModal, setActiveModal] = useState(null); // 'profile' | 'subscription' | 'watchlist' | 'language' | 'about' | 'help' | 'logout' | 'auth' | null
+  const [activeModal, setActiveModal] = useState(null); // 'profile' | 'subscription' | 'watchlist' | 'language' | 'about' | 'help' | 'copyright_claim' | 'logout' | 'auth' | null
   const [aboutTab, setAboutTab] = useState('about'); // 'about' | 'privacy' | 'terms'
   const [isSubmitFilmOpen, setIsSubmitFilmOpen] = useState(false);
+
+  // Copyright Claim form state
+  const [claimForm, setClaimForm] = useState({
+    claimantName: userProfile?.name || user?.name || '',
+    email: userProfile?.email || user?.email || '',
+    contentTitle: '',
+    contentUrl: '',
+    rightsProof: '',
+    description: '',
+    goodFaithChecked: false,
+  });
+  const [claimSubmittedCaseId, setClaimSubmittedCaseId] = useState(null);
+  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
+
+  const handleSubmitClaim = (e) => {
+    e.preventDefault();
+    if (
+      !claimForm.claimantName.trim() ||
+      !claimForm.email.trim() ||
+      !claimForm.contentTitle.trim() ||
+      !claimForm.rightsProof.trim()
+    ) {
+      showToast('Please fill out all required fields marked with *');
+      return;
+    }
+    if (!claimForm.goodFaithChecked) {
+      showToast('Please confirm the legal declaration checkbox');
+      return;
+    }
+
+    setIsSubmittingClaim(true);
+    setTimeout(() => {
+      const generatedId = `CPR-${Math.floor(1000 + Math.random() * 9000)}`;
+      setClaimSubmittedCaseId(generatedId);
+      setIsSubmittingClaim(false);
+      showToast(`Copyright claim #${generatedId} submitted to legal@aspectt.stream`);
+    }, 500);
+  };
+
+  const handleCloseClaimModal = () => {
+    setActiveModal(null);
+    setClaimSubmittedCaseId(null);
+    setClaimForm({
+      claimantName: userProfile?.name || user?.name || '',
+      email: userProfile?.email || user?.email || '',
+      contentTitle: '',
+      contentUrl: '',
+      rightsProof: '',
+      description: '',
+      goodFaithChecked: false,
+    });
+  };
 
   // Auth form state (Login & Registration)
   const [authTab, setAuthTab] = useState('login'); // 'login' | 'register'
@@ -225,7 +277,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#1E2024] py-8 sm:py-12 px-4 sm:px-6">
       <div className="max-w-xl mx-auto">
-        
+
         {/* User Header Section Card */}
         {isAuthenticated && (userProfile || user) ? (
           <div className="bg-[#282B30] border border-[#353941] rounded-xl p-6 sm:p-8 mb-6 relative overflow-hidden">
@@ -391,7 +443,7 @@ export default function Profile() {
 
         {/* Menu Items List Card */}
         <div className="bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden divide-y divide-[#353941]">
-          
+
           {/* 1. Subscription Details */}
           <button
             onClick={() => navigate('/subscription')}
@@ -442,7 +494,7 @@ export default function Profile() {
               <span className="text-sm font-semibold text-white">App Language</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-[#B8BCC4]">
-              <span>{userProfile?.language || 'English (US)'}</span>
+              <span>{userProfile?.language?.startsWith('English') ? 'English' : (userProfile?.language || 'English')}</span>
               <ChevronRightIcon fontSize="small" className="text-[#8A8F99]" />
             </div>
           </button>
@@ -554,7 +606,7 @@ export default function Profile() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-2">
                     Choose Avatar
                   </label>
-                  
+
                   <div className="relative w-full group">
                     {/* PC Only: Left Arrow Button (visible when scrolled past 1st avatar) */}
                     {canScrollLeft && (
@@ -577,13 +629,13 @@ export default function Profile() {
                         WebkitMaskImage: canScrollLeft && canScrollRight
                           ? 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 2%, black 8%, black 80%, rgba(0,0,0,0.1) 95%, transparent 100%)'
                           : canScrollLeft && !canScrollRight
-                          ? 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 2%, black 8%, black 100%)'
-                          : 'linear-gradient(to right, black 0%, black 80%, rgba(0, 0, 0, 0.10) 95%, transparent 100%)',
+                            ? 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 2%, black 8%, black 100%)'
+                            : 'linear-gradient(to right, black 0%, black 80%, rgba(0, 0, 0, 0.10) 95%, transparent 100%)',
                         maskImage: canScrollLeft && canScrollRight
                           ? 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 2%, black 8%, black 80%, rgba(0,0,0,0.1) 95%, transparent 100%)'
                           : canScrollLeft && !canScrollRight
-                          ? 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 2%, black 8%, black 100%)'
-                          : 'linear-gradient(to right, black 0%, black 80%, rgba(0, 0, 0, 0.10) 95%, transparent 100%)',
+                            ? 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.1) 2%, black 8%, black 100%)'
+                            : 'linear-gradient(to right, black 0%, black 80%, rgba(0, 0, 0, 0.10) 95%, transparent 100%)',
                       }}
                     >
                       {AVATAR_OPTIONS.map((avatar) => {
@@ -882,613 +934,823 @@ export default function Profile() {
                 <CloseIcon fontSize="small" />
               </button>
             </div>
-            <div className="p-5 space-y-2">
-              {[
-                'English (US)',
-                'English (UK)',
-                'Español (Latinoamérica)',
-                'Français',
-                'Deutsch',
-                '日本語',
-                'Italiano',
-              ].map((lang) => (
+              <div className="p-5 space-y-3">
+                {/* English (Default) */}
                 <button
-                  key={lang}
-                  onClick={() => handleLanguageChange(lang)}
-                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
-                    userProfile?.language === lang
-                      ? 'bg-[#1E2024] border-[#7E57C2] text-white'
-                      : 'bg-[#1E2024] border-[#353941] text-[#B8BCC4] hover:text-white hover:border-[#454A54]'
-                  }`}
+                  onClick={() => handleLanguageChange('English')}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-xs font-medium border bg-[#1E2024] border-[#7E57C2] text-white transition-colors cursor-pointer"
                 >
-                  <span>{lang}</span>
-                  {userProfile?.language === lang && (
-                    <CheckIcon fontSize="small" className="text-[#7E57C2]" />
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-white">English</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7E57C2]/20 text-[#7E57C2] font-medium border border-[#7E57C2]/30">
+                      Default
+                    </span>
+                  </div>
+                  <CheckIcon fontSize="small" className="text-[#7E57C2]" />
                 </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* 4. About Modal with Top 3 Buttons: About, Privacy Policy, Terms and Conditions */}
-      {activeModal === 'about' && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl max-h-[85vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#353941] bg-[#222428]">
-              <h3 className="text-base font-bold text-white">
-                {aboutTab === 'about' && 'About Aspectt'}
-                {aboutTab === 'privacy' && 'Privacy Policy'}
-                {aboutTab === 'terms' && 'Terms and Conditions'}
-              </h3>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941]"
-              >
-                <CloseIcon fontSize="small" />
-              </button>
-            </div>
-
-            {/* Three Buttons at Top */}
-            <div className="p-3 border-b border-[#353941] bg-[#1E2024]/60">
-              <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#1E2024] border border-[#353941] rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setAboutTab('about')}
-                  className={`py-2 px-1 text-center text-xs font-semibold rounded-md transition-all cursor-pointer truncate ${
-                    aboutTab === 'about'
-                      ? 'bg-[#7E57C2] text-white shadow-sm'
-                      : 'text-[#B8BCC4] hover:text-white hover:bg-[#282B30]'
-                  }`}
-                >
-                  About
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAboutTab('privacy')}
-                  className={`py-2 px-1 text-center text-xs font-semibold rounded-md transition-all cursor-pointer truncate ${
-                    aboutTab === 'privacy'
-                      ? 'bg-[#7E57C2] text-white shadow-sm'
-                      : 'text-[#B8BCC4] hover:text-white hover:bg-[#282B30]'
-                  }`}
-                >
-                  Privacy Policy
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAboutTab('terms')}
-                  className={`py-2 px-1 text-center text-xs font-semibold rounded-md transition-all cursor-pointer truncate ${
-                    aboutTab === 'terms'
-                      ? 'bg-[#7E57C2] text-white shadow-sm'
-                      : 'text-[#B8BCC4] hover:text-white hover:bg-[#282B30]'
-                  }`}
-                >
-                  Terms and Conditions
-                </button>
+                {/* More languages coming soon */}
+                <div className="p-4 rounded-lg bg-[#1E2024]/60 border border-[#353941] text-center space-y-1">
+                  <p className="text-xs font-semibold text-white tracking-wide">
+                    More languages coming soon
+                  </p>
+                  <p className="text-[11px] text-[#8A8F99] leading-relaxed">
+                    Additional regional localizations languages will be available in upcoming releases.
+                  </p>
+                </div>
               </div>
             </div>
+          </div>
+      )}
 
-            {/* Content Area */}
-            <div className="p-5 overflow-y-auto space-y-4 text-xs text-[#B8BCC4] leading-relaxed flex-1">
-              {/* 1. About Tab Content */}
-              {aboutTab === 'about' && (
-                <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
-                  <div className="pb-3 border-b border-[#353941]">
-                    <h4 className="text-base font-extrabold text-white tracking-tight">
-                      Every Frame Has a Perspective.
-                    </h4>
-                    <p className="text-xs text-[#7E57C2] font-semibold mt-0.5">
-                      Curated Independent Cinema
-                    </p>
-                  </div>
+          {/* 4. About Modal with Top 3 Buttons: About, Privacy Policy, Terms and Conditions */}
+          {activeModal === 'about' && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+              <div className="w-full max-w-lg bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl max-h-[85vh] flex flex-col">
+                {/* Modal Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[#353941] bg-[#222428]">
+                  <h3 className="text-base font-bold text-white">
+                    {aboutTab === 'about' && 'About Aspectt'}
+                    {aboutTab === 'privacy' && 'Privacy Policy'}
+                    {aboutTab === 'terms' && 'Terms and Conditions'}
+                  </h3>
+                  <button
+                    onClick={() => setActiveModal(null)}
+                    className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941]"
+                  >
+                    <CloseIcon fontSize="small" />
+                  </button>
+                </div>
 
-                  <p className="text-[#EDEDED] leading-relaxed">
-                    Aspectt is a curated streaming home dedicated to meaningful storytelling, bold filmmaking, and cinema that stays with you long after the credits roll.
-                  </p>
-
-                  <p className="leading-relaxed">
-                    We believe great stories deserve a stage where they can truly be experienced. Every short film, documentary, and independent feature in our catalog is thoughtfully handpicked by people who deeply care about the craft of cinema.
-                  </p>
-
-                  <div className="pt-2 border-t border-[#353941]">
-                    <h5 className="text-xs font-bold uppercase tracking-wider text-white mb-2.5">
-                      What We Stand For
-                    </h5>
-                    <div className="space-y-2.5">
-                      <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
-                        <strong className="text-white font-semibold block mb-0.5">
-                          Thoughtful Curation
-                        </strong>
-                        <span className="text-[#8A8F99]">
-                          A carefully selected library of festival gems, independent voices, and untold stories from India and around the world.
-                        </span>
-                      </div>
-
-                      <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
-                        <strong className="text-white font-semibold block mb-0.5">
-                          Uninterrupted Viewing
-                        </strong>
-                        <span className="text-[#8A8F99]">
-                          Once you press play, the story belongs entirely to you—no mid-roll interruptions, just pure cinema from start to finish.
-                        </span>
-                      </div>
-
-                      <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
-                        <strong className="text-white font-semibold block mb-0.5">
-                          Filmmakers First
-                        </strong>
-                        <span className="text-[#8A8F99]">
-                          Aspectt is built to empower independent creators. Filmmakers retain 100% ownership of their work through transparent, non-exclusive partnerships and direct audience insights.
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="pt-2 border-t border-[#353941] text-[#EDEDED] leading-relaxed">
-                    Whether you are a cinephile searching for your next unforgettable watch or a filmmaker looking for a home that respects your vision—<strong className="text-white">welcome to Aspectt</strong>.
-                  </p>
-
-                  <div className="p-3 bg-[#7E57C2]/15 border border-[#7E57C2]/40 rounded-xl flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-white font-medium text-xs">
-                        Have a film to share?
-                      </p>
-                      <p className="text-[11px] text-[#B8BCC4]">
-                        Submit your work and become part of our growing catalog.
-                      </p>
-                    </div>
+                {/* Three Buttons at Top */}
+                <div className="p-3 border-b border-[#353941] bg-[#1E2024]/60">
+                  <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#1E2024] border border-[#353941] rounded-lg">
                     <button
                       type="button"
-                      onClick={() => setIsSubmitFilmOpen(true)}
-                      className="px-3 py-1.5 bg-[#7E57C2] hover:bg-[#6D48B5] text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-sm"
+                      onClick={() => setAboutTab('about')}
+                      className={`py-2 px-1 text-center text-xs font-semibold rounded-md transition-all cursor-pointer truncate ${aboutTab === 'about'
+                        ? 'bg-[#7E57C2] text-white shadow-sm'
+                        : 'text-[#B8BCC4] hover:text-white hover:bg-[#282B30]'
+                        }`}
                     >
-                      Submit Film
+                      About
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAboutTab('privacy')}
+                      className={`py-2 px-1 text-center text-xs font-semibold rounded-md transition-all cursor-pointer truncate ${aboutTab === 'privacy'
+                        ? 'bg-[#7E57C2] text-white shadow-sm'
+                        : 'text-[#B8BCC4] hover:text-white hover:bg-[#282B30]'
+                        }`}
+                    >
+                      Privacy Policy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAboutTab('terms')}
+                      className={`py-2 px-1 text-center text-xs font-semibold rounded-md transition-all cursor-pointer truncate ${aboutTab === 'terms'
+                        ? 'bg-[#7E57C2] text-white shadow-sm'
+                        : 'text-[#B8BCC4] hover:text-white hover:bg-[#282B30]'
+                        }`}
+                    >
+                      Terms and Conditions
                     </button>
                   </div>
                 </div>
-              )}
 
-              {/* 2. Privacy Policy Tab Content */}
-              {aboutTab === 'privacy' && (
-                <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
-                  <div className="pb-3 border-b border-[#353941]">
-                    <h4 className="text-base font-bold text-white">Privacy Policy</h4>
-                    <p className="text-[#8A8F99] mt-0.5 text-[11px] font-mono">Last Updated: November 2026</p>
+                {/* Content Area */}
+                <div className="p-5 overflow-y-auto space-y-4 text-xs text-[#B8BCC4] leading-relaxed flex-1">
+                  {/* 1. About Tab Content */}
+                  {aboutTab === 'about' && (
+                    <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
+                      <div className="pb-3 border-b border-[#353941]">
+                        <h4 className="text-base font-extrabold text-white tracking-tight">
+                          Every Frame Has a Perspective.
+                        </h4>
+                        <p className="text-xs text-[#7E57C2] font-semibold mt-0.5">
+                          Curated Independent Cinema
+                        </p>
+                      </div>
+
+                      <p className="text-[#EDEDED] leading-relaxed">
+                        Aspectt is a curated streaming home dedicated to meaningful storytelling, bold filmmaking, and cinema that stays with you long after the credits roll.
+                      </p>
+
+                      <p className="leading-relaxed">
+                        We believe great stories deserve a stage where they can truly be experienced. Every short film, documentary, and independent feature in our catalog is thoughtfully handpicked by people who deeply care about the craft of cinema.
+                      </p>
+
+                      <div className="pt-2 border-t border-[#353941]">
+                        <h5 className="text-xs font-bold uppercase tracking-wider text-white mb-2.5">
+                          What We Stand For
+                        </h5>
+                        <div className="space-y-2.5">
+                          <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
+                            <strong className="text-white font-semibold block mb-0.5">
+                              Thoughtful Curation
+                            </strong>
+                            <span className="text-[#8A8F99]">
+                              A carefully selected library of festival gems, independent voices, and untold stories from India and around the world.
+                            </span>
+                          </div>
+
+                          <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
+                            <strong className="text-white font-semibold block mb-0.5">
+                              Uninterrupted Viewing
+                            </strong>
+                            <span className="text-[#8A8F99]">
+                              Once you press play, the story belongs entirely to you—no mid-roll interruptions, just pure cinema from start to finish.
+                            </span>
+                          </div>
+
+                          <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
+                            <strong className="text-white font-semibold block mb-0.5">
+                              Filmmakers First
+                            </strong>
+                            <span className="text-[#8A8F99]">
+                              Aspectt is built to empower independent creators. Filmmakers retain 100% ownership of their work through transparent, non-exclusive partnerships and direct audience insights.
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="pt-2 border-t border-[#353941] text-[#EDEDED] leading-relaxed">
+                        Whether you are a cinephile searching for your next unforgettable watch or a filmmaker looking for a home that respects your vision—<strong className="text-white">welcome to Aspectt</strong>.
+                      </p>
+
+                      <div className="p-3 bg-[#7E57C2]/15 border border-[#7E57C2]/40 rounded-xl flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-white font-medium text-xs">
+                            Have a film to share?
+                          </p>
+                          <p className="text-[11px] text-[#B8BCC4]">
+                            Submit your work and become part of our growing catalog.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsSubmitFilmOpen(true)}
+                          className="px-3 py-1.5 bg-[#7E57C2] hover:bg-[#6D48B5] text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap shadow-sm"
+                        >
+                          Submit Film
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. Privacy Policy Tab Content */}
+                  {aboutTab === 'privacy' && (
+                    <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
+                      <div className="pb-3 border-b border-[#353941]">
+                        <h4 className="text-base font-bold text-white">Privacy Policy</h4>
+                        <p className="text-[#8A8F99] mt-0.5 text-[11px] font-mono">Last Updated: November 2026</p>
+                      </div>
+
+                      <p className="text-[#EDEDED]">
+                        Welcome to Aspectt. Your privacy is important to us. This Privacy Policy explains how we collect, use, store, and protect your personal information when you browse our website, create an account, stream content, or submit films on Aspectt.
+                      </p>
+
+                      <div className="space-y-3 pt-1">
+                        <div>
+                          <h5 className="font-semibold text-white mb-1.5">1. Information We Collect</h5>
+                          <p className="mb-2">When you use Aspectt, we may collect the following information:</p>
+                          <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
+                            <li>
+                              <strong className="text-white">Account Information:</strong> Your name, email address, mobile number, encrypted password, and chosen profile avatar when you register or verify your account via One-Time Password (OTP).
+                            </li>
+                            <li>
+                              <strong className="text-white">Filmmaker Submission Data:</strong> If you submit a film, we collect your contact details, film metadata, screener links, and related project information.
+                            </li>
+                            <li>
+                              <strong className="text-white">Usage & Streaming Data:</strong> Basic technical logs such as watch activity, playback quality preferences, device/browser type, and IP address to maintain streaming performance and provide transparent watch-time insights to creators.
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1.5">2. How We Use Your Information</h5>
+                          <p className="mb-1.5">We use the collected information strictly to:</p>
+                          <ul className="space-y-1 list-disc list-inside text-[#B8BCC4]">
+                            <li>Create, verify, and secure your Aspectt account (including sending OTP verification emails).</li>
+                            <li>Provide smooth, uninterrupted high-definition video playback and personalized profile features.</li>
+                            <li>Review filmmaker submissions and share aggregated watch-time analytics with respective creators.</li>
+                            <li>Maintain platform security, prevent unauthorized access to video streams, and improve user experience.</li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">3. Advertising & Display Placements</h5>
+                          <p>
+                            While we do not interrupt film playback with mid-roll advertisements, Aspectt may display non-intrusive advertisements or sponsored placements while browsing pages on the platform. Third-party ad partners, if introduced, may use standard cookies or non-personally identifiable browsing data to serve relevant display ads. We never sell your personal contact details (such as your email address or mobile number) to third parties.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">4. Data Storage & Third-Party Services</h5>
+                          <p>
+                            To operate our streaming and authentication infrastructure, we rely on trusted third-party service providers for database hosting, video delivery (CDN), and transactional email delivery. Your passwords are stored in encrypted (hashed) form, and video streams are protected against unauthorized access.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">5. Cookies & Local Storage</h5>
+                          <p>
+                            Aspectt uses browser localStorage and essential cookies to keep you signed in, remember your selected avatar, and preserve your playback preferences across sessions. You can clear your browser storage at any time, though doing so will sign you out of your account.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">6. Your Rights & Account Control</h5>
+                          <p>
+                            You may view or update your profile details on your Profile page, or request deletion of your account and associated personal data by contacting us.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">7. Changes to This Privacy Policy</h5>
+                          <p>
+                            Aspectt reserves the right to update, modify, or replace any part of this Privacy Policy at any time without any prior notice. Any changes will take effect immediately upon being posted on this page. Your continued use of the platform following the posting of updates constitutes your acceptance of the revised policy.
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-[#353941]">
+                          <h5 className="font-semibold text-white mb-1">8. Contact Us</h5>
+                          <p>
+                            If you have any questions regarding this Privacy Policy or your data, please reach out to us through the official contact details provided on the Aspectt website.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Terms and Conditions Tab Content */}
+                  {aboutTab === 'terms' && (
+                    <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
+                      <div className="pb-3 border-b border-[#353941]">
+                        <h4 className="text-base font-bold text-white">Terms and Conditions</h4>
+                        <p className="text-[#8A8F99] mt-0.5 text-[11px] font-mono">Last Updated: November 2026</p>
+                      </div>
+
+                      <p className="text-[#EDEDED]">
+                        Welcome to Aspectt. By accessing, browsing, creating an account, streaming content, or submitting films on our website, you agree to comply with and be bound by the following Terms and Conditions. If you do not agree with any part of these terms, please refrain from using the platform.
+                      </p>
+
+                      <div className="space-y-3 pt-1">
+                        <div>
+                          <h5 className="font-semibold text-white mb-1.5">1. Eligibility & Account Registration</h5>
+                          <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
+                            <li>
+                              <strong className="text-white">Account Requirement:</strong> While visitors may browse the public catalog, creating a verified Aspectt account (via One-Time Password authentication) is required to stream full films and access personalized features.
+                            </li>
+                            <li>
+                              <strong className="text-white">Accurate Information:</strong> You agree to provide accurate and complete information (name, email address, and mobile number) during registration and to keep your login credentials confidential.
+                            </li>
+                            <li>
+                              <strong className="text-white">Account Responsibility:</strong> You are responsible for all activity that occurs under your account. Sharing accounts publicly or bypassing authentication controls is strictly prohibited.
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1.5">2. License to Stream & Content Restrictions</h5>
+                          <p className="mb-2">
+                            <strong className="text-white">Personal, Non-Commercial Use:</strong> Aspectt grants you a limited, revocable, non-exclusive, and non-transferable license to stream films on the platform solely for personal, non-commercial viewing.
+                          </p>
+                          <p className="mb-1.5">
+                            <strong className="text-white">Strict Anti-Piracy & Stream Protection:</strong> All films, trailers, artwork, audio, and streaming URLs on Aspectt are protected by copyright and technical access controls. You agree not to:
+                          </p>
+                          <ul className="space-y-1 list-disc list-inside text-[#B8BCC4] pl-1">
+                            <li>Download, rip, screen-record, redistribute, or publicly exhibit any content from Aspectt.</li>
+                            <li>Inspect, extract, share, or hotlink protected video stream URLs (.m3u8 or media segments) outside the official Aspectt player.</li>
+                            <li>Circumvent, disable, or tamper with any security or authentication mechanisms on the platform.</li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1.5">3. Filmmaker Submissions & Content Ownership</h5>
+                          <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
+                            <li>
+                              <strong className="text-white">100% Creator Ownership:</strong> Filmmakers who submit their work to Aspectt retain 100% ownership and copyright of their films.
+                            </li>
+                            <li>
+                              <strong className="text-white">Non-Exclusive Streaming Grant:</strong> By submitting a film and approving it for publication on Aspectt, the filmmaker grants Aspectt a non-exclusive, worldwide, royalty-free right to host, stream, promote (using trailers, stills, and metadata), and display the film on the platform until removed by mutual agreement or written takedown request.
+                            </li>
+                            <li>
+                              <strong className="text-white">Creator Warranties:</strong> Filmmakers represent and warrant that they hold all necessary rights, music licenses, and clearances for their submitted work and that it does not infringe upon any third-party intellectual property or legal rights.
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">4. Platform Experience & Browsing Placements</h5>
+                          <p>
+                            Aspectt provides uninterrupted film playback without mid-roll advertisements. However, Aspectt reserves the right to display non-intrusive sponsored placements or advertisements across browsing pages on the website.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">5. Suspension & Termination</h5>
+                          <p>
+                            Aspectt reserves the right to suspend or permanently terminate any user account, without prior notice, if we detect unauthorized stream access, piracy, abusive behavior, or any violation of these Terms and Conditions.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">6. Disclaimer & Limitation of Liability</h5>
+                          <p className="mb-1.5">
+                            Aspectt is provided on an "as is" and "as available" basis. While we strive for uninterrupted high-definition streaming, we do not guarantee that the platform will always be error-free or uninterrupted due to network or third-party server factors.
+                          </p>
+                          <p>
+                            To the fullest extent permitted by law, Aspectt shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">7. Governing Law</h5>
+                          <p>
+                            These Terms and Conditions shall be governed by and construed in accordance with the laws of India, and any disputes arising under these terms shall be subject to the exclusive jurisdiction of the courts in India.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h5 className="font-semibold text-white mb-1">8. Changes to These Terms</h5>
+                          <p>
+                            Aspectt reserves the right to update, modify, or replace any part of these Terms and Conditions at any time without any prior notice. Any revisions take effect immediately upon being posted on this page. Your continued use of the platform after updates are posted constitutes your acceptance of the revised Terms and Conditions.
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-[#353941]">
+                          <h5 className="font-semibold text-white mb-1">9. Contact Us</h5>
+                          <p>
+                            For any questions regarding these Terms and Conditions, film submissions, or copyright inquiries, please reach out through the official contact channels listed on the Aspectt website.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 5. Support and Copyright Claim Modal */}
+          {activeModal === 'help' && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+              <div className="w-full max-w-md bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl max-h-[88vh] flex flex-col">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[#353941] bg-[#222428]">
+                  <h3 className="text-base font-bold text-white">Support and Copyright Claim</h3>
+                  <button
+                    onClick={() => setActiveModal(null)}
+                    className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941]"
+                  >
+                    <CloseIcon fontSize="small" />
+                  </button>
+                </div>
+                <div className="p-5 space-y-4 text-xs text-[#B8BCC4] overflow-y-auto">
+                  {/* Support Contact Info */}
+                  <div className="p-3.5 rounded-lg bg-[#1E2024] border border-[#353941] text-xs text-[#B8BCC4] text-center">
+                    <span className="text-[#8A8F99]">For any issues or concerns, contact </span>
+                    <a
+                      href="mailto:support@aspectt.stream"
+                      className="text-white font-semibold hover:text-[#7E57C2] underline underline-offset-2 transition-colors cursor-pointer"
+                    >
+                      support@aspectt.stream
+                    </a>
                   </div>
 
-                  <p className="text-[#EDEDED]">
-                    Welcome to Aspectt. Your privacy is important to us. This Privacy Policy explains how we collect, use, store, and protect your personal information when you browse our website, create an account, stream content, or submit films on Aspectt.
+                  {/* Copyright & DMCA Section */}
+                  <div className="pt-3 border-t border-[#353941] space-y-2.5">
+                    <div className="flex items-center gap-2 text-white font-semibold">
+                      <CopyrightOutlinedIcon fontSize="small" className="text-[#7E57C2]" />
+                      <span>Copyright & Content Claim</span>
+                    </div>
+                    <p className="text-[#8A8F99] leading-relaxed">
+                      Aspectt adheres to international intellectual property laws and DMCA standards. If you believe your copyrighted title or visual material is being displayed without authorization, submit a takedown request to our designated legal team.
+                    </p>
+                    <div className="p-2.5 rounded bg-[#1E2024] border border-[#353941] text-[11px] font-mono text-[#B8BCC4]">
+                      Legal Inquiries: <span className="text-white">copyright@aspectt.stream</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setClaimSubmittedCaseId(null);
+                        setClaimForm((prev) => ({
+                          ...prev,
+                          claimantName: prev.claimantName || userProfile?.name || user?.name || '',
+                          email: prev.email || userProfile?.email || user?.email || '',
+                        }));
+                        setActiveModal('copyright_claim');
+                      }}
+                      className="w-full py-2.5 rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+                    >
+                      <CopyrightOutlinedIcon fontSize="small" />
+                      <span>File Copyright Claim</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 6. File Copyright Claim Modal */}
+          {activeModal === 'copyright_claim' && (
+            <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+              <div className="w-full max-w-lg bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+                {/* Modal Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[#353941] bg-[#222428] flex-shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal('help')}
+                      className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941] transition-colors cursor-pointer mr-0.5"
+                      title="Back to Help"
+                      aria-label="Back to Help"
+                    >
+                      <ChevronLeftIcon fontSize="small" />
+                    </button>
+                    <div>
+                      <h3 className="text-base font-bold text-white flex items-center gap-2">
+                        <CopyrightOutlinedIcon fontSize="small" className="text-[#7E57C2]" />
+                        File Copyright Claim
+                      </h3>
+                      <p className="text-[11px] text-[#8A8F99] mt-0.5">
+                        Submit an official DMCA takedown request to Aspectt Legal
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCloseClaimModal}
+                    className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941] transition-colors cursor-pointer"
+                    aria-label="Close"
+                  >
+                    <CloseIcon fontSize="small" />
+                  </button>
+                </div>
+
+                {/* Modal Content */}
+                {claimSubmittedCaseId ? (
+                  /* Success Confirmation Screen */
+                  <div className="p-6 text-center space-y-4 overflow-y-auto">
+                    <div className="w-14 h-14 mx-auto rounded-full bg-[#7E57C2]/20 border border-[#7E57C2]/40 flex items-center justify-center text-[#7E57C2]">
+                      <CheckIcon fontSize="large" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-white">Copyright Claim Submitted</h4>
+                      <p className="text-xs text-[#8A8F99] mt-1">
+                        Your claim has been logged and transmitted to the Aspectt Legal Department.
+                      </p>
+                    </div>
+                    <div className="p-3.5 rounded-lg bg-[#1E2024] border border-[#353941] text-left space-y-2 text-xs">
+                      <div className="flex justify-between items-center text-[#B8BCC4]">
+                        <span className="text-[#8A8F99]">Case Tracking ID:</span>
+                        <span className="font-mono text-white font-semibold">#{claimSubmittedCaseId}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[#B8BCC4]">
+                        <span className="text-[#8A8F99]">Claimant:</span>
+                        <span className="text-white">{claimForm.claimantName}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[#B8BCC4]">
+                        <span className="text-[#8A8F99]">Content Title:</span>
+                        <span className="text-white truncate max-w-[200px]">{claimForm.contentTitle}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[#B8BCC4]">
+                        <span className="text-[#8A8F99]">Status:</span>
+                        <span className="text-emerald-400 font-medium">Under Review (24-48h)</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-[#8A8F99] leading-relaxed">
+                      A confirmation email with case tracking details has been sent to <span className="text-white">{claimForm.email}</span>. If additional documentation is required, our legal compliance team will reply directly.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleCloseClaimModal}
+                      className="w-full py-2.5 rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer shadow-md"
+                    >
+                      Done
+                    </button>
+                  </div>
+                ) : (
+                  /* Copyright Claim Submission Form */
+                  <form onSubmit={handleSubmitClaim} className="p-5 space-y-3.5 text-xs text-[#B8BCC4] overflow-y-auto">
+                    <div className="p-2.5 rounded-lg bg-[#1E2024]/60 border border-[#353941] text-[11px] text-[#8A8F99] leading-relaxed">
+                      Notice: Filing false, bad-faith, or fraudulent copyright claims is subject to civil liability under DMCA Section 512(f).
+                    </div>
+
+                    {/* Claimant Name & Email */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-[#B8BCC4] mb-1">
+                          Full Legal Name / Entity <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={claimForm.claimantName}
+                          onChange={(e) => setClaimForm((prev) => ({ ...prev, claimantName: e.target.value }))}
+                          placeholder="e.g. Jane Doe or Apex Studio LLC"
+                          required
+                          className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5A5E67] focus:outline-none focus:border-[#7E57C2]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#B8BCC4] mb-1">
+                          Contact Email <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={claimForm.email}
+                          onChange={(e) => setClaimForm((prev) => ({ ...prev, email: e.target.value }))}
+                          placeholder="e.g. legal@studio.com"
+                          required
+                          className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5A5E67] focus:outline-none focus:border-[#7E57C2]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Content Title on Aspectt */}
+                    <div>
+                      <label className="block text-xs font-semibold text-[#B8BCC4] mb-1">
+                        Content Title on Aspectt <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={claimForm.contentTitle}
+                        onChange={(e) => setClaimForm((prev) => ({ ...prev, contentTitle: e.target.value }))}
+                        placeholder="Exact title of the film or video on Aspectt"
+                        required
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5A5E67] focus:outline-none focus:border-[#7E57C2]"
+                      />
+                    </div>
+
+                    {/* Aspectt URL or Timestamp (Optional) */}
+                    <div>
+                      <label className="block text-xs font-semibold text-[#B8BCC4] mb-1">
+                        Aspectt URL or Scene / Timestamp <span className="text-[#8A8F99] font-normal">(optional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={claimForm.contentUrl}
+                        onChange={(e) => setClaimForm((prev) => ({ ...prev, contentUrl: e.target.value }))}
+                        placeholder="e.g. https://aspectt.stream/movie/4 or Timestamp 00:23:45"
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5A5E67] focus:outline-none focus:border-[#7E57C2]"
+                      />
+                    </div>
+
+                    {/* Proof of Rights / Original Work */}
+                    <div>
+                      <label className="block text-xs font-semibold text-[#B8BCC4] mb-1">
+                        Proof of Ownership & Original Work Details <span className="text-red-400">*</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={claimForm.rightsProof}
+                        onChange={(e) => setClaimForm((prev) => ({ ...prev, rightsProof: e.target.value }))}
+                        placeholder="Provide registration number, publisher link, official distributor proof, or authorized rights verification..."
+                        required
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5A5E67] focus:outline-none focus:border-[#7E57C2] resize-none"
+                      />
+                    </div>
+
+                    {/* Infringement Statement */}
+                    <div>
+                      <label className="block text-xs font-semibold text-[#B8BCC4] mb-1">
+                        Description of Infringement <span className="text-[#8A8F99] font-normal">(optional)</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={claimForm.description}
+                        onChange={(e) => setClaimForm((prev) => ({ ...prev, description: e.target.value }))}
+                        placeholder="Describe how your rights are being violated (e.g. unauthorized streaming, unlicensed soundtrack, or full film rip)..."
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3 py-2 text-xs text-white placeholder-[#5A5E67] focus:outline-none focus:border-[#7E57C2] resize-none"
+                      />
+                    </div>
+
+                    {/* Good Faith Declaration */}
+                    <div className="pt-1">
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={claimForm.goodFaithChecked}
+                          onChange={(e) => setClaimForm((prev) => ({ ...prev, goodFaithChecked: e.target.checked }))}
+                          required
+                          className="mt-0.5 w-4 h-4 rounded border-[#353941] bg-[#1E2024] text-[#7E57C2] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#7E57C2]"
+                        />
+                        <span className="text-[11px] text-[#8A8F99] leading-tight">
+                          I declare under penalty of perjury that I am the copyright owner (or authorized to act on behalf of the owner) and hold a good-faith belief that the use is not authorized by the copyright owner, its agent, or the law. <span className="text-red-400">*</span>
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Form Actions */}
+                    <div className="pt-2 flex items-center justify-end gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setActiveModal('help')}
+                        className="px-4 py-2 rounded-lg bg-[#1E2024] hover:bg-[#353941] text-[#B8BCC4] hover:text-white text-xs font-medium border border-[#353941] transition-colors cursor-pointer"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingClaim}
+                        className="px-5 py-2 rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] disabled:opacity-50 text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer shadow-md flex items-center gap-1.5"
+                      >
+                        {isSubmittingClaim ? (
+                          <span>Submitting...</span>
+                        ) : (
+                          <>
+                            <CopyrightOutlinedIcon fontSize="small" />
+                            <span>Submit Claim</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 7. Logout Confirmation Modal */}
+          {activeModal === 'logout' && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+              <div className="w-full max-w-sm bg-[#282B30] border border-[#4A282D] rounded-xl overflow-hidden shadow-2xl">
+                <div className="p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[#24171A] border border-[#4A282D] flex items-center justify-center text-[#E57373]">
+                    <LogoutOutlinedIcon fontSize="medium" />
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1">Sign Out of Aspectt?</h3>
+                  <p className="text-xs text-[#B8BCC4] mb-5 leading-relaxed">
+                    You will be redirected to the home screen. Your watchlist and preferences will remain saved on this device.
                   </p>
-
-                  <div className="space-y-3 pt-1">
-                    <div>
-                      <h5 className="font-semibold text-white mb-1.5">1. Information We Collect</h5>
-                      <p className="mb-2">When you use Aspectt, we may collect the following information:</p>
-                      <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
-                        <li>
-                          <strong className="text-white">Account Information:</strong> Your name, email address, mobile number, encrypted password, and chosen profile avatar when you register or verify your account via One-Time Password (OTP).
-                        </li>
-                        <li>
-                          <strong className="text-white">Filmmaker Submission Data:</strong> If you submit a film, we collect your contact details, film metadata, screener links, and related project information.
-                        </li>
-                        <li>
-                          <strong className="text-white">Usage & Streaming Data:</strong> Basic technical logs such as watch activity, playback quality preferences, device/browser type, and IP address to maintain streaming performance and provide transparent watch-time insights to creators.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1.5">2. How We Use Your Information</h5>
-                      <p className="mb-1.5">We use the collected information strictly to:</p>
-                      <ul className="space-y-1 list-disc list-inside text-[#B8BCC4]">
-                        <li>Create, verify, and secure your Aspectt account (including sending OTP verification emails).</li>
-                        <li>Provide smooth, uninterrupted high-definition video playback and personalized profile features.</li>
-                        <li>Review filmmaker submissions and share aggregated watch-time analytics with respective creators.</li>
-                        <li>Maintain platform security, prevent unauthorized access to video streams, and improve user experience.</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">3. Advertising & Display Placements</h5>
-                      <p>
-                        While we do not interrupt film playback with mid-roll advertisements, Aspectt may display non-intrusive advertisements or sponsored placements while browsing pages on the platform. Third-party ad partners, if introduced, may use standard cookies or non-personally identifiable browsing data to serve relevant display ads. We never sell your personal contact details (such as your email address or mobile number) to third parties.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">4. Data Storage & Third-Party Services</h5>
-                      <p>
-                        To operate our streaming and authentication infrastructure, we rely on trusted third-party service providers for database hosting, video delivery (CDN), and transactional email delivery. Your passwords are stored in encrypted (hashed) form, and video streams are protected against unauthorized access.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">5. Cookies & Local Storage</h5>
-                      <p>
-                        Aspectt uses browser localStorage and essential cookies to keep you signed in, remember your selected avatar, and preserve your playback preferences across sessions. You can clear your browser storage at any time, though doing so will sign you out of your account.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">6. Your Rights & Account Control</h5>
-                      <p>
-                        You may view or update your profile details on your Profile page, or request deletion of your account and associated personal data by contacting us.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">7. Changes to This Privacy Policy</h5>
-                      <p>
-                        Aspectt reserves the right to update, modify, or replace any part of this Privacy Policy at any time without any prior notice. Any changes will take effect immediately upon being posted on this page. Your continued use of the platform following the posting of updates constitutes your acceptance of the revised policy.
-                      </p>
-                    </div>
-
-                    <div className="pt-2 border-t border-[#353941]">
-                      <h5 className="font-semibold text-white mb-1">8. Contact Us</h5>
-                      <p>
-                        If you have any questions regarding this Privacy Policy or your data, please reach out to us through the official contact details provided on the Aspectt website.
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setActiveModal(null)}
+                      className="flex-1 py-2 rounded-lg text-xs font-medium text-[#B8BCC4] hover:text-white border border-[#353941] bg-[#1E2024] cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex-1 py-2 rounded-lg text-xs font-semibold text-white bg-[#D32F2F] hover:bg-[#C62828] transition-colors cursor-pointer"
+                    >
+                      Confirm Logout
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              {/* 3. Terms and Conditions Tab Content */}
-              {aboutTab === 'terms' && (
-                <div className="space-y-4 text-xs text-[#B8BCC4] leading-relaxed">
-                  <div className="pb-3 border-b border-[#353941]">
-                    <h4 className="text-base font-bold text-white">Terms and Conditions</h4>
-                    <p className="text-[#8A8F99] mt-0.5 text-[11px] font-mono">Last Updated: November 2026</p>
+          {/* 8. Sign In / Register Modal (Live PostgreSQL Auth) */}
+          {activeModal === 'auth' && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+              <div className="w-full max-w-md bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#353941] bg-[#222428]">
+                  <div>
+                    <h3 className="text-base font-bold text-white">
+                      {authTab === 'login' ? 'Sign In to Aspectt' : 'Create Aspectt Account'}
+                    </h3>
+                    <p className="text-xs text-[#8A8F99]">
+                      {authTab === 'login'
+                        ? 'Access your curated cinema watchlist & settings'
+                        : 'Join the sanctuary for independent auteur cinema'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveModal(null)}
+                    className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941] transition-colors cursor-pointer"
+                  >
+                    <CloseIcon fontSize="small" />
+                  </button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-[#353941] bg-[#1E2024]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthTab('login');
+                      setAuthError('');
+                    }}
+                    className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase transition-colors border-b-2 cursor-pointer ${authTab === 'login'
+                      ? 'text-white border-[#7E57C2] bg-[#282B30]'
+                      : 'text-[#8A8F99] border-transparent hover:text-white'
+                      }`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthTab('register');
+                      setAuthError('');
+                    }}
+                    className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase transition-colors border-b-2 cursor-pointer ${authTab === 'register'
+                      ? 'text-white border-[#7E57C2] bg-[#282B30]'
+                      : 'text-[#8A8F99] border-transparent hover:text-white'
+                      }`}
+                  >
+                    Create Account
+                  </button>
+                </div>
+
+                {/* Demo Helper Banner */}
+                {authTab === 'login' && (
+                  <div className="mx-6 mt-4 p-3 bg-[#1E2024] border border-[#7E57C2]/40 rounded-lg flex items-center justify-between gap-3">
+                    <div className="text-[11px] text-[#B8BCC4] leading-tight">
+                      <span className="text-white font-medium block">Demo Cinephile Account</span>
+                      <span className="font-mono text-[#8A8F99]">alex@aspectt.com • Password123!</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={fillDemoCredentials}
+                      className="px-2.5 py-1 rounded bg-[#7E57C2]/20 hover:bg-[#7E57C2] text-[#7E57C2] hover:text-white border border-[#7E57C2]/40 text-[11px] font-semibold transition-colors flex-shrink-0 cursor-pointer"
+                    >
+                      Quick Fill
+                    </button>
+                  </div>
+                )}
+
+                {/* Form */}
+                <form
+                  onSubmit={authTab === 'login' ? handleLoginSubmit : handleRegisterSubmit}
+                  className="p-6 space-y-4"
+                >
+                  {authError && (
+                    <div className="p-3 rounded-lg bg-red-950/60 border border-red-800/80 text-red-200 text-xs">
+                      {authError}
+                    </div>
+                  )}
+
+                  {authTab === 'register' && (
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
+                        Your Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={authName}
+                        onChange={(e) => setAuthName(e.target.value)}
+                        placeholder="e.g. Alex Vance"
+                        className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="alex@aspectt.com"
+                      className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2] font-mono"
+                    />
                   </div>
 
-                  <p className="text-[#EDEDED]">
-                    Welcome to Aspectt. By accessing, browsing, creating an account, streaming content, or submitting films on our website, you agree to comply with and be bound by the following Terms and Conditions. If you do not agree with any part of these terms, please refrain from using the platform.
-                  </p>
-
-                  <div className="space-y-3 pt-1">
-                    <div>
-                      <h5 className="font-semibold text-white mb-1.5">1. Eligibility & Account Registration</h5>
-                      <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
-                        <li>
-                          <strong className="text-white">Account Requirement:</strong> While visitors may browse the public catalog, creating a verified Aspectt account (via One-Time Password authentication) is required to stream full films and access personalized features.
-                        </li>
-                        <li>
-                          <strong className="text-white">Accurate Information:</strong> You agree to provide accurate and complete information (name, email address, and mobile number) during registration and to keep your login credentials confidential.
-                        </li>
-                        <li>
-                          <strong className="text-white">Account Responsibility:</strong> You are responsible for all activity that occurs under your account. Sharing accounts publicly or bypassing authentication controls is strictly prohibited.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1.5">2. License to Stream & Content Restrictions</h5>
-                      <p className="mb-2">
-                        <strong className="text-white">Personal, Non-Commercial Use:</strong> Aspectt grants you a limited, revocable, non-exclusive, and non-transferable license to stream films on the platform solely for personal, non-commercial viewing.
-                      </p>
-                      <p className="mb-1.5">
-                        <strong className="text-white">Strict Anti-Piracy & Stream Protection:</strong> All films, trailers, artwork, audio, and streaming URLs on Aspectt are protected by copyright and technical access controls. You agree not to:
-                      </p>
-                      <ul className="space-y-1 list-disc list-inside text-[#B8BCC4] pl-1">
-                        <li>Download, rip, screen-record, redistribute, or publicly exhibit any content from Aspectt.</li>
-                        <li>Inspect, extract, share, or hotlink protected video stream URLs (.m3u8 or media segments) outside the official Aspectt player.</li>
-                        <li>Circumvent, disable, or tamper with any security or authentication mechanisms on the platform.</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1.5">3. Filmmaker Submissions & Content Ownership</h5>
-                      <ul className="space-y-1.5 pl-3 border-l-2 border-[#7E57C2]/50">
-                        <li>
-                          <strong className="text-white">100% Creator Ownership:</strong> Filmmakers who submit their work to Aspectt retain 100% ownership and copyright of their films.
-                        </li>
-                        <li>
-                          <strong className="text-white">Non-Exclusive Streaming Grant:</strong> By submitting a film and approving it for publication on Aspectt, the filmmaker grants Aspectt a non-exclusive, worldwide, royalty-free right to host, stream, promote (using trailers, stills, and metadata), and display the film on the platform until removed by mutual agreement or written takedown request.
-                        </li>
-                        <li>
-                          <strong className="text-white">Creator Warranties:</strong> Filmmakers represent and warrant that they hold all necessary rights, music licenses, and clearances for their submitted work and that it does not infringe upon any third-party intellectual property or legal rights.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">4. Platform Experience & Browsing Placements</h5>
-                      <p>
-                        Aspectt provides uninterrupted film playback without mid-roll advertisements. However, Aspectt reserves the right to display non-intrusive sponsored placements or advertisements across browsing pages on the website.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">5. Suspension & Termination</h5>
-                      <p>
-                        Aspectt reserves the right to suspend or permanently terminate any user account, without prior notice, if we detect unauthorized stream access, piracy, abusive behavior, or any violation of these Terms and Conditions.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">6. Disclaimer & Limitation of Liability</h5>
-                      <p className="mb-1.5">
-                        Aspectt is provided on an "as is" and "as available" basis. While we strive for uninterrupted high-definition streaming, we do not guarantee that the platform will always be error-free or uninterrupted due to network or third-party server factors.
-                      </p>
-                      <p>
-                        To the fullest extent permitted by law, Aspectt shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">7. Governing Law</h5>
-                      <p>
-                        These Terms and Conditions shall be governed by and construed in accordance with the laws of India, and any disputes arising under these terms shall be subject to the exclusive jurisdiction of the courts in India.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-white mb-1">8. Changes to These Terms</h5>
-                      <p>
-                        Aspectt reserves the right to update, modify, or replace any part of these Terms and Conditions at any time without any prior notice. Any revisions take effect immediately upon being posted on this page. Your continued use of the platform after updates are posted constitutes your acceptance of the revised Terms and Conditions.
-                      </p>
-                    </div>
-
-                    <div className="pt-2 border-t border-[#353941]">
-                      <h5 className="font-semibold text-white mb-1">9. Contact Us</h5>
-                      <p>
-                        For any questions regarding these Terms and Conditions, film submissions, or copyright inquiries, please reach out through the official contact channels listed on the Aspectt website.
-                      </p>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
+                    />
                   </div>
-                </div>
-              )}
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full py-2.5 rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer shadow-md disabled:opacity-50"
+                    >
+                      {authLoading
+                        ? 'Processing...'
+                        : authTab === 'login'
+                          ? 'Sign In'
+                          : 'Create Account'}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Film Submission Dialog Modal (Same modal as Home page) */}
+          <FilmSubmissionModal
+            isOpen={isSubmitFilmOpen}
+            onClose={() => setIsSubmitFilmOpen(false)}
+          />
+
         </div>
-      )}
-
-      {/* 5. Support and Copyright Claim Modal */}
-      {activeModal === 'help' && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl max-h-[88vh] flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#353941] bg-[#222428]">
-              <h3 className="text-base font-bold text-white">Support and Copyright Claim</h3>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941]"
-              >
-                <CloseIcon fontSize="small" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4 text-xs text-[#B8BCC4] overflow-y-auto">
-              {/* Server Status */}
-              <div className="bg-[#1E2024] border border-[#353941] rounded-lg p-3">
-                <div className="flex items-center gap-2 text-white font-medium mb-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  Streaming Servers: All Systems Operational
-                </div>
-                <span className="text-[#8A8F99]">Latency: 18ms • CDN Edge Node active</span>
-              </div>
-
-              {/* Support Button */}
-              <button
-                onClick={() => {
-                  setActiveModal(null);
-                  showToast('Support ticket #ASP-8849 created. We will email you.');
-                }}
-                className="w-full py-2.5 rounded-lg bg-[#1E2024] border border-[#353941] hover:border-[#454A54] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer"
-              >
-                Contact Support Desk
-              </button>
-
-              {/* Copyright & DMCA Section */}
-              <div className="pt-3 border-t border-[#353941] space-y-2.5">
-                <div className="flex items-center gap-2 text-white font-semibold">
-                  <CopyrightOutlinedIcon fontSize="small" className="text-[#7E57C2]" />
-                  <span>Copyright & Content Claim</span>
-                </div>
-                <p className="text-[#8A8F99] leading-relaxed">
-                  Aspectt adheres to international intellectual property laws and DMCA standards. If you believe your copyrighted title or visual material is being displayed without authorization, submit a takedown request to our designated legal team.
-                </p>
-                <div className="p-2.5 rounded bg-[#1E2024] border border-[#353941] text-[11px] font-mono text-[#B8BCC4]">
-                  Legal Inquiries: <span className="text-white">copyright@aspectt.stream</span>
-                </div>
-                <button
-                  onClick={() => {
-                    setActiveModal(null);
-                    showToast('Copyright claim submitted to legal@aspectt.stream. Case ID: #CPR-1042');
-                  }}
-                  className="w-full py-2.5 rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer shadow-md"
-                >
-                  File Copyright Claim
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 7. Logout Confirmation Modal */}
-      {activeModal === 'logout' && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-[#282B30] border border-[#4A282D] rounded-xl overflow-hidden shadow-2xl">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-[#24171A] border border-[#4A282D] flex items-center justify-center text-[#E57373]">
-                <LogoutOutlinedIcon fontSize="medium" />
-              </div>
-              <h3 className="text-base font-bold text-white mb-1">Sign Out of Aspectt?</h3>
-              <p className="text-xs text-[#B8BCC4] mb-5 leading-relaxed">
-                You will be redirected to the home screen. Your watchlist and preferences will remain saved on this device.
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="flex-1 py-2 rounded-lg text-xs font-medium text-[#B8BCC4] hover:text-white border border-[#353941] bg-[#1E2024] cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="flex-1 py-2 rounded-lg text-xs font-semibold text-white bg-[#D32F2F] hover:bg-[#C62828] transition-colors cursor-pointer"
-                >
-                  Confirm Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 8. Sign In / Register Modal (Live PostgreSQL Auth) */}
-      {activeModal === 'auth' && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden shadow-2xl flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#353941] bg-[#222428]">
-              <div>
-                <h3 className="text-base font-bold text-white">
-                  {authTab === 'login' ? 'Sign In to Aspectt' : 'Create Aspectt Account'}
-                </h3>
-                <p className="text-xs text-[#8A8F99]">
-                  {authTab === 'login'
-                    ? 'Access your curated cinema watchlist & settings'
-                    : 'Join the sanctuary for independent auteur cinema'}
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="text-[#B8BCC4] hover:text-white p-1 rounded-md hover:bg-[#353941] transition-colors cursor-pointer"
-              >
-                <CloseIcon fontSize="small" />
-              </button>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-[#353941] bg-[#1E2024]">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthTab('login');
-                  setAuthError('');
-                }}
-                className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase transition-colors border-b-2 cursor-pointer ${
-                  authTab === 'login'
-                    ? 'text-white border-[#7E57C2] bg-[#282B30]'
-                    : 'text-[#8A8F99] border-transparent hover:text-white'
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthTab('register');
-                  setAuthError('');
-                }}
-                className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase transition-colors border-b-2 cursor-pointer ${
-                  authTab === 'register'
-                    ? 'text-white border-[#7E57C2] bg-[#282B30]'
-                    : 'text-[#8A8F99] border-transparent hover:text-white'
-                }`}
-              >
-                Create Account
-              </button>
-            </div>
-
-            {/* Demo Helper Banner */}
-            {authTab === 'login' && (
-              <div className="mx-6 mt-4 p-3 bg-[#1E2024] border border-[#7E57C2]/40 rounded-lg flex items-center justify-between gap-3">
-                <div className="text-[11px] text-[#B8BCC4] leading-tight">
-                  <span className="text-white font-medium block">Demo Cinephile Account</span>
-                  <span className="font-mono text-[#8A8F99]">alex@aspectt.com • Password123!</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={fillDemoCredentials}
-                  className="px-2.5 py-1 rounded bg-[#7E57C2]/20 hover:bg-[#7E57C2] text-[#7E57C2] hover:text-white border border-[#7E57C2]/40 text-[11px] font-semibold transition-colors flex-shrink-0 cursor-pointer"
-                >
-                  Quick Fill
-                </button>
-              </div>
-            )}
-
-            {/* Form */}
-            <form
-              onSubmit={authTab === 'login' ? handleLoginSubmit : handleRegisterSubmit}
-              className="p-6 space-y-4"
-            >
-              {authError && (
-                <div className="p-3 rounded-lg bg-red-950/60 border border-red-800/80 text-red-200 text-xs">
-                  {authError}
-                </div>
-              )}
-
-              {authTab === 'register' && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={authName}
-                    onChange={(e) => setAuthName(e.target.value)}
-                    placeholder="e.g. Alex Vance"
-                    className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                  placeholder="alex@aspectt.com"
-                  className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2] font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[#B8BCC4] mb-1.5">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full bg-[#1E2024] border border-[#353941] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#5A5F6B] focus:outline-none focus:border-[#7E57C2]"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="w-full py-2.5 rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] text-white text-xs font-semibold tracking-wide transition-colors cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {authLoading
-                    ? 'Processing...'
-                    : authTab === 'login'
-                    ? 'Sign In'
-                    : 'Create Account'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Film Submission Dialog Modal (Same modal as Home page) */}
-      <FilmSubmissionModal
-        isOpen={isSubmitFilmOpen}
-        onClose={() => setIsSubmitFilmOpen(false)}
-      />
-
-    </div>
-  );
+      );
 }
