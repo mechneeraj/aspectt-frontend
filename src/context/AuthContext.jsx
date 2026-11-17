@@ -314,6 +314,27 @@ export const AuthProvider = ({ children }) => {
   );
 
   /**
+   * Forgot Password - Request 6-digit OTP
+   */
+  const forgotPassword = useCallback(async ({ identifier, email }) => {
+    return await authApi.forgotPassword({ identifier, email });
+  }, []);
+
+  /**
+   * Forgot Password - Verify OTP
+   */
+  const verifyResetOtp = useCallback(async ({ email, otp }) => {
+    return await authApi.verifyResetOtp({ email, otp });
+  }, []);
+
+  /**
+   * Forgot Password - Reset Password
+   */
+  const resetPassword = useCallback(async ({ resetToken, newPassword, email, otp }) => {
+    return await authApi.resetPassword({ resetToken, newPassword, email, otp });
+  }, []);
+
+  /**
    * Immediate Logout handler
    * Clears token and user state immediately across all components without reload
    */
@@ -381,6 +402,9 @@ export const AuthProvider = ({ children }) => {
         register,
         sendOtp,
         verifyOtp,
+        forgotPassword,
+        verifyResetOtp,
+        resetPassword,
         setAuthAvatar,
         logout,
         refreshUser,

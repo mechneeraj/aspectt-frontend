@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StarsIcon from '@mui/icons-material/Stars';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +38,13 @@ export default function Subscription() {
             ? 'Yearly Plan (₹999) activated successfully!'
             : 'Monthly Plan (₹99) activated successfully!'
         );
+        if (pendingPlayback) {
+          const target = pendingPlayback?.id || (typeof pendingPlayback === 'string' ? pendingPlayback : null);
+          clearPendingPlayback?.();
+          if (target) {
+            navigate(`/movie/${target}?play=true`);
+          }
+        }
       }
     } catch (err) {
       console.error('Subscription activation error:', err);
@@ -77,41 +83,6 @@ export default function Subscription() {
 
   return (
     <div className="min-h-screen bg-[#1E2024] text-white pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto select-none">
-
-      {/* Pending Playback Alert (if user was redirected here while trying to watch) */}
-      {pendingPlayback && (
-        <div className="mb-6 p-4 rounded-xl bg-[#282B30] border border-[#7E57C2]/40 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in w-full overflow-hidden">
-          <div className="flex items-start sm:items-center gap-3 w-full min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-[#7E57C2]/20 border border-[#7E57C2]/40 flex items-center justify-center text-[#7E57C2] shrink-0 mt-0.5 sm:mt-0">
-              <PlayArrowIcon />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-white break-words leading-snug">
-                Subscription required to stream{pendingPlayback?.title ? `: ${pendingPlayback.title}` : ' selected title'}
-              </h4>
-              <p className="text-xs text-[#B8BCC4] mt-0.5 break-words leading-relaxed">
-                Choose a plan below to activate instant access and resume playback.
-              </p>
-            </div>
-          </div>
-          {isSubscribed ? (
-            <button
-              onClick={() => {
-                const target = pendingPlayback?.id || (typeof pendingPlayback === 'string' ? pendingPlayback : null);
-                clearPendingPlayback();
-                if (target) {
-                  navigate(`/movie/${target}?play=true`);
-                }
-              }}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 w-full sm:w-auto rounded-lg bg-[#7E57C2] hover:bg-[#673AB7] text-white text-xs font-semibold shrink-0 cursor-pointer shadow-lg active:scale-95 transition-all"
-            >
-              <PlayArrowIcon fontSize="small" />
-              <span>Watch Now</span>
-            </button>
-          ) : null}
-        </div>
-      )}
-
       {/* Page Header */}
       <div className="text-center max-w-2xl mx-auto mb-10">
         <span className="text-[11px] uppercase tracking-widest font-semibold px-2.5 py-1 rounded bg-[#282B30] border border-[#353941] text-[#7E57C2] inline-block mb-3">
@@ -184,8 +155,8 @@ export default function Subscription() {
             {/* Card 1: Monthly Plan — ₹99 */}
             <div
               className={`flex flex-col justify-between p-6 sm:p-8 rounded-2xl transition-all duration-200 ${isCurrentPlan('MONTHLY')
-                  ? 'bg-[#282B30] border-2 border-[#7E57C2] shadow-[0_0_30px_rgba(126,87,194,0.2)]'
-                  : 'bg-[#282B30] border border-[#353941] hover:border-[#4B505B]'
+                ? 'bg-[#282B30] border-2 border-[#7E57C2] shadow-[0_0_30px_rgba(126,87,194,0.2)]'
+                : 'bg-[#282B30] border border-[#353941] hover:border-[#4B505B]'
                 }`}
             >
               <div>
@@ -215,8 +186,8 @@ export default function Subscription() {
                 onClick={() => handleActivate('MONTHLY')}
                 disabled={activatingPlan !== null || isCurrentPlan('MONTHLY')}
                 className={`w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${isCurrentPlan('MONTHLY')
-                    ? 'bg-[#1E2024] text-[#8A8F99] border border-[#353941] cursor-default'
-                    : 'bg-[#7E57C2] hover:bg-[#6D42B9] active:bg-[#5E35B1] text-white border border-[#9575CD]/40'
+                  ? 'bg-[#1E2024] text-[#8A8F99] border border-[#353941] cursor-default'
+                  : 'bg-[#7E57C2] hover:bg-[#6D42B9] active:bg-[#5E35B1] text-white border border-[#9575CD]/40'
                   }`}
               >
                 {activatingPlan === 'MONTHLY' ? (
@@ -235,8 +206,8 @@ export default function Subscription() {
             {/* Card 2: Yearly Plan — ₹999 (Best Value) */}
             <div
               className={`flex flex-col justify-between p-6 sm:p-8 rounded-2xl relative transition-all duration-200 ${isCurrentPlan('YEARLY')
-                  ? 'bg-[#282B30] border-2 border-[#7E57C2] shadow-[0_0_30px_rgba(126,87,194,0.2)]'
-                  : 'bg-[#282B30] border border-[#353941] hover:border-[#4B505B]'
+                ? 'bg-[#282B30] border-2 border-[#7E57C2] shadow-[0_0_30px_rgba(126,87,194,0.2)]'
+                : 'bg-[#282B30] border border-[#353941] hover:border-[#4B505B]'
                 }`}
             >
               {/* Best Value Badge */}
@@ -272,8 +243,8 @@ export default function Subscription() {
                 onClick={() => handleActivate('YEARLY')}
                 disabled={activatingPlan !== null || isCurrentPlan('YEARLY')}
                 className={`w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${isCurrentPlan('YEARLY')
-                    ? 'bg-[#1E2024] text-[#8A8F99] border border-[#353941] cursor-default'
-                    : 'bg-[#7E57C2] hover:bg-[#6D42B9] active:bg-[#5E35B1] text-white border border-[#9575CD]/40'
+                  ? 'bg-[#1E2024] text-[#8A8F99] border border-[#353941] cursor-default'
+                  : 'bg-[#7E57C2] hover:bg-[#6D42B9] active:bg-[#5E35B1] text-white border border-[#9575CD]/40'
                   }`}
               >
                 {activatingPlan === 'YEARLY' ? (

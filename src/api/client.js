@@ -311,6 +311,27 @@ export const authApi = {
   },
 
   /**
+   * POST /api/auth/forgot-password
+   */
+  forgotPassword: async ({ identifier, email }) => {
+    return await client.post('/auth/forgot-password', { identifier, email });
+  },
+
+  /**
+   * POST /api/auth/verify-reset-otp
+   */
+  verifyResetOtp: async ({ email, otp }) => {
+    return await client.post('/auth/verify-reset-otp', { email, otp });
+  },
+
+  /**
+   * POST /api/auth/reset-password
+   */
+  resetPassword: async ({ resetToken, newPassword, email, otp }) => {
+    return await client.post('/auth/reset-password', { resetToken, newPassword, email, otp });
+  },
+
+  /**
    * POST /api/user/login or POST /api/auth/login
    */
   login: async ({ email, password }) => {
