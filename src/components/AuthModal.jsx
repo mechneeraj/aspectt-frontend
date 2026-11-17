@@ -4,7 +4,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import PhoneAndroidOutlinedIcon from '@mui/icons-material/PhoneAndroidOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
@@ -28,7 +27,6 @@ export default function AuthModal() {
   // Form input fields
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -88,12 +86,6 @@ export default function AuthModal() {
     setError('');
   };
 
-  // 10-digit mobile phone validation
-  const validatePhone = (phoneNumber) => {
-    const digitsOnly = String(phoneNumber || '').replace(/\D/g, '');
-    return digitsOnly.length === 10;
-  };
-
   // Step 1: Submit Form (Login or Send OTP for Signup)
   const handleSubmitForm = async (e) => {
     e.preventDefault();
@@ -117,11 +109,6 @@ export default function AuthModal() {
       // Signup form validation
       if (!name.trim()) {
         setError('Please provide your full name.');
-        return;
-      }
-
-      if (!phone.trim() || !validatePhone(phone)) {
-        setError('Please enter a valid 10-digit mobile number.');
         return;
       }
 
@@ -153,7 +140,6 @@ export default function AuthModal() {
         const otpRes = await sendOtp({
           name: name.trim(),
           email: email.trim(),
-          phone: phone.trim(),
           password,
         });
 
@@ -211,7 +197,6 @@ export default function AuthModal() {
       const res = await sendOtp({
         name: name.trim(),
         email: email.trim(),
-        phone: phone.trim(),
         password,
       });
 
@@ -548,37 +533,6 @@ export default function AuthModal() {
                         required
                       />
                     </div>
-                  </div>
-                )}
-
-                {/* Signup Field: Mobile Number (10 digits) */}
-                {tab === 'register' && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#B8BCC4] mb-1">
-                      Mobile Number (10 Digits)
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8A8F99]">
-                        <PhoneAndroidOutlinedIcon sx={{ fontSize: 18 }} />
-                      </div>
-                      <input
-                        type="tel"
-                        maxLength={10}
-                        value={phone}
-                        onChange={(e) => {
-                          setPhone(e.target.value.replace(/\D/g, ''));
-                          setError('');
-                        }}
-                        placeholder="9876543210"
-                        className="w-full pl-9 pr-3 py-2 bg-[#1E2024] border border-[#353941] rounded-xl text-sm text-white placeholder-[#8A8F99] focus:outline-none focus:border-[#7E57C2] transition-colors font-mono"
-                        required
-                      />
-                    </div>
-                    {phone && phone.length > 0 && phone.length < 10 && (
-                      <span className="text-[11px] text-[#E57373] mt-0.5 block">
-                        Must be exactly 10 digits ({phone.length}/10)
-                      </span>
-                    )}
                   </div>
                 )}
 
