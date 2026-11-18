@@ -9,9 +9,7 @@ export const FOOTAGE_ITEMS = [
     duration: '5m 12s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Pankaj Tripathi',
-    filmmakerName: 'Pankaj Tripathi',
     film: 'Method Acting in Low-Budget Realism',
     cameraNote: 'Actor Masterclass',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
@@ -27,9 +25,7 @@ export const FOOTAGE_ITEMS = [
     duration: '3m 42s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Elena Vance',
-    filmmakerName: 'Elena Vance',
     film: 'Echoes of the Void',
     cameraNote: 'Shot on 16mm • Underwater Rigs',
     image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80',
@@ -45,9 +41,7 @@ export const FOOTAGE_ITEMS = [
     duration: '4m 30s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Studio Chroma Design Team',
-    filmmakerName: 'Studio Chroma Design Team',
     film: 'Atmospheric World Building',
     cameraNote: 'Tactile Miniatures & Set Dressing',
     image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80',
@@ -63,9 +57,7 @@ export const FOOTAGE_ITEMS = [
     duration: '4m 05s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Radhika Apte',
-    filmmakerName: 'Radhika Apte',
     film: 'Character Duality in Psychological Thrillers',
     cameraNote: 'Performance Deep Dive',
     image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
@@ -81,9 +73,7 @@ export const FOOTAGE_ITEMS = [
     duration: '2m 58s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Kenji Sato',
-    filmmakerName: 'Kenji Sato',
     film: 'Midnight in Kyoto',
     cameraNote: 'Anamorphic Glass • Ambient Neon',
     image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
@@ -99,9 +89,7 @@ export const FOOTAGE_ITEMS = [
     duration: '3m 50s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Maya Thorne',
-    filmmakerName: 'Maya Thorne',
     film: 'Synthesizing Glacial Hydrophone Frequencies',
     cameraNote: 'Spatial Audio Field Test',
     image: 'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=800&q=80',
@@ -117,9 +105,7 @@ export const FOOTAGE_ITEMS = [
     duration: '4m 15s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Julian Rhys',
-    filmmakerName: 'Julian Rhys',
     film: 'The Silent Ascent',
     cameraNote: 'Super 35mm • Alpine Crew',
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
@@ -135,9 +121,7 @@ export const FOOTAGE_ITEMS = [
     duration: '3m 20s',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
-    // Backward compatibility
     director: 'Claire Fontaine',
-    filmmakerName: 'Claire Fontaine',
     film: 'Aperture',
     cameraNote: 'Silver Gelatin • Archival Process',
     image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',

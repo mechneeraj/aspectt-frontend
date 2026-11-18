@@ -48,7 +48,7 @@ export default function BehindTheLens() {
   const filteredClips = clips.filter((clip) => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
-    const person = (clip.personName || clip.filmmakerName || clip.director || '').toLowerCase();
+    const person = (clip.personName || clip.director || '').toLowerCase();
     const role = (clip.role || '').toLowerCase();
     const title = (clip.title || clip.film || '').toLowerCase();
     const details = (clip.details || clip.cameraNote || '').toLowerCase();
@@ -67,12 +67,12 @@ export default function BehindTheLens() {
     ? {
         ...selectedClip,
         title: selectedClip.title || '',
-        personName: selectedClip.personName || selectedClip.filmmakerName || selectedClip.director,
+        personName: selectedClip.personName || selectedClip.director || 'Artist',
         role: selectedClip.role || 'Filmmaker',
         details: selectedClip.details || selectedClip.cameraNote || '',
         filmography: selectedClip.filmography || '',
         duration: selectedClip.duration || '3m 00s',
-        director: selectedClip.personName || selectedClip.filmmakerName || selectedClip.director,
+        director: selectedClip.personName || selectedClip.director || 'Artist',
         backdrop: selectedClip.thumbnailUrl || selectedClip.image,
         poster: selectedClip.thumbnailUrl || selectedClip.image,
         year: 2024,
@@ -161,7 +161,7 @@ export default function BehindTheLens() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
             {filteredClips.map((item) => {
-              const person = item.personName || item.filmmakerName || item.director || 'Artist';
+              const person = item.personName || item.director || 'Artist';
               const role = item.role || 'Filmmaker';
 
               return (

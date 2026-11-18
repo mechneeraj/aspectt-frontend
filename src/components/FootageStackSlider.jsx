@@ -180,7 +180,7 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
               `}
               title={
                 isFront
-                  ? `Watch ${clip.role || 'Filmmaker'} : ${clip.personName || clip.filmmakerName || clip.director}`
+                  ? `Watch ${clip.role || 'Filmmaker'} : ${clip.personName || clip.director}`
                   : `Bring to front`
               }
             >
@@ -188,7 +188,7 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
               <div className="relative aspect-video w-full bg-[#1E2024] overflow-hidden flex-shrink-0">
                 <img
                   src={clip.thumbnailUrl || clip.image}
-                  alt={clip.personName || clip.filmmakerName || clip.director}
+                  alt={clip.personName || clip.director}
                   className="w-full h-full object-cover opacity-90"
                   draggable={false}
                 />
@@ -202,7 +202,7 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
                       onWatchClip(clip);
                     }}
                     className="absolute inset-0 flex items-center justify-center bg-black/25 transition-opacity cursor-pointer"
-                    aria-label={`Play ${clip.role || 'Filmmaker'} : ${clip.personName || clip.filmmakerName || clip.director}`}
+                    aria-label={`Play ${clip.role || 'Filmmaker'} : ${clip.personName || clip.director}`}
                   >
                     <div className="w-9 h-9 rounded-full bg-[#7E57C2] text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform">
                       <PlayArrowIcon fontSize="small" />
@@ -215,11 +215,11 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
               <div className="p-2.5 flex-1 flex flex-col justify-between">
                 <p
                   className="text-xs text-white truncate"
-                  title={`${clip.role || 'Filmmaker'} : ${clip.personName || clip.filmmakerName || clip.director}`}
+                  title={`${clip.role || 'Filmmaker'} : ${clip.personName || clip.director}`}
                 >
                   <span className="text-[#8A8F99] font-normal">{clip.role || 'Filmmaker'} : </span>
                   <strong className="text-white font-medium">
-                    {clip.personName || clip.filmmakerName || clip.director}
+                    {clip.personName || clip.director}
                   </strong>
                 </p>
 

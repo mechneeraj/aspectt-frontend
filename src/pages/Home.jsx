@@ -205,12 +205,12 @@ export default function Home() {
     ? {
         ...activeClip,
         title: activeClip.title,
-        personName: activeClip.personName || activeClip.filmmakerName || activeClip.director,
+        personName: activeClip.personName || activeClip.director || 'Artist',
         role: activeClip.role || 'Filmmaker',
         details: activeClip.details || activeClip.cameraNote || '',
         filmography: activeClip.filmography || '',
         duration: activeClip.duration,
-        director: activeClip.personName || activeClip.filmmakerName || activeClip.director,
+        director: activeClip.personName || activeClip.director || 'Artist',
         backdrop: activeClip.thumbnailUrl || activeClip.image,
         poster: activeClip.thumbnailUrl || activeClip.image,
         year: 2024,
@@ -426,7 +426,7 @@ export default function Home() {
                   >
                     <img
                       src={item.thumbnailUrl || item.image}
-                      alt={item.personName || item.filmmakerName || item.director}
+                      alt={item.personName || item.director}
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
@@ -443,11 +443,11 @@ export default function Home() {
                   <div className="p-3.5 sm:p-4 flex flex-col justify-between space-y-3">
                     <p
                       className="text-xs sm:text-sm truncate text-white"
-                      title={`${item.role || 'Filmmaker'} : ${item.personName || item.filmmakerName || item.director}`}
+                      title={`${item.role || 'Filmmaker'} : ${item.personName || item.director}`}
                     >
                       <span className="text-[#8A8F99] font-normal">{item.role || 'Filmmaker'} : </span>
                       <strong className="text-white font-medium">
-                        {item.personName || item.filmmakerName || item.director}
+                        {item.personName || item.director}
                       </strong>
                     </p>
 

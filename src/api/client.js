@@ -80,7 +80,7 @@ export const normalizeMovie = (movie) => {
  */
 export const normalizeClip = (clip) => {
   if (!clip) return null;
-  const person = clip.personName || clip.filmmakerName || clip.director || 'Artist';
+  const person = clip.personName || clip.director || 'Artist';
   const role = clip.role || 'Filmmaker';
   const video = clip.videoUrl || clip.clipUrl || '';
   const details = clip.details || clip.cameraNote || '';
@@ -98,8 +98,6 @@ export const normalizeClip = (clip) => {
     videoUrl: video,
     thumbnailUrl: thumb,
     duration: clip.duration || '3m 00s',
-    // Aliases for full backward compatibility
-    filmmakerName: person,
     director: person,
     cameraNote: details,
     clipUrl: video,

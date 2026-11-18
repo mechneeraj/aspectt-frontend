@@ -642,7 +642,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
             </span>
             <h3 className="text-white font-semibold text-xs sm:text-base truncate drop-shadow-md">
               {isBehindTheLens
-                ? `${movie.role || 'Artist'} : ${movie.personName || movie.director || movie.filmmakerName}${movie.title ? ` — ${movie.title}` : ''}`
+                ? `${movie.role || 'Artist'} : ${movie.personName || movie.director}${movie.title ? ` — ${movie.title}` : ''}`
                 : movie.title}
             </h3>
           </div>
@@ -1115,24 +1115,16 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
               {/* Role : PersonName + optional Title */}
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-[#353941]/60 pb-3.5">
                 <div>
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#7E57C2]/20 border border-[#7E57C2]/50 text-[#7E57C2]">
-                      {movie.role || 'Behind the Lens'}
-                    </span>
-                    {movie.duration && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#282B30] border border-[#353941] text-[#8A8F99]">
-                        {movie.duration}
-                      </span>
-                    )}
-                    {isYouTube && (
+                  {isYouTube && (
+                    <div className="mb-1.5">
                       <span className="text-[10px] px-2 py-0.5 rounded bg-red-950/40 border border-red-800/40 text-red-400 font-medium">
                         YouTube
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   <h2 className="text-base sm:text-xl font-bold text-white tracking-tight">
                     <span className="text-[#8A8F99] font-normal">{movie.role || 'Filmmaker'} : </span>
-                    <span className="text-white">{movie.personName || movie.director || movie.filmmakerName}</span>
+                    <span className="text-white">{movie.personName || movie.director}</span>
                   </h2>
                   {movie.title && movie.title.trim() && (
                     <h3 className="text-xs sm:text-sm font-medium text-[#EDEDED] mt-1">
@@ -1178,9 +1170,9 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
             <div className="flex items-center gap-2 truncate min-w-0">
               <span className="text-white font-medium truncate">{movie.title}</span>
               <span className="shrink-0">({movie.year || movie.releaseYear || 2024})</span>
-              {movie.director || movie.filmmakerName ? (
+              {movie.director ? (
                 <span className="text-[#8A8F99] truncate">
-                  • Directed by {movie.director || movie.filmmakerName}
+                  • Directed by {movie.director}
                 </span>
               ) : null}
             </div>
