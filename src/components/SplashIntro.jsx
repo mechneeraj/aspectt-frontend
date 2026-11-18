@@ -239,7 +239,7 @@ export default function SplashIntro() {
 
             {/* --- Letter 'E' --- */}
             <text
-              x="59.6"
+              x="60.6"
               y="23"
               fontFamily="'Montserrat', 'Inter', 'Arial Black', sans-serif"
               fontSize="25"
@@ -252,7 +252,7 @@ export default function SplashIntro() {
 
             {/* --- Letter 'C' --- */}
             <text
-              x="75.8"
+              x="77.8"
               y="23"
               fontFamily="'Montserrat', 'Inter', 'Arial Black', sans-serif"
               fontSize="25"
@@ -265,7 +265,7 @@ export default function SplashIntro() {
 
             {/* --- Second-to-last Letter 'T' (White) --- */}
             <text
-              x="93.2"
+              x="98.2"
               y="23"
               fontFamily="'Montserrat', 'Inter', 'Arial Black', sans-serif"
               fontSize="25"
@@ -278,7 +278,7 @@ export default function SplashIntro() {
 
             {/* --- Final Letter 'T' (Purple, cleanly spaced) --- */}
             <text
-              x="108.5"
+              x="113.5"
               y="23"
               fontFamily="'Montserrat', 'Inter', 'Arial Black', sans-serif"
               fontSize="25"
