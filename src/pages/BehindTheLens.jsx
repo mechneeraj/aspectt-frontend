@@ -48,10 +48,11 @@ export default function BehindTheLens() {
   const filteredClips = clips.filter((clip) => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
-    const dir = (clip.director || clip.filmmakerName || '').toLowerCase();
-    const flm = (clip.film || clip.title || '').toLowerCase();
-    const ttl = (clip.title || '').toLowerCase();
-    return dir.includes(q) || flm.includes(q) || ttl.includes(q);
+    const person = (clip.personName || clip.filmmakerName || clip.director || '').toLowerCase();
+    const role = (clip.role || '').toLowerCase();
+    const title = (clip.title || clip.film || '').toLowerCase();
+    const details = (clip.details || clip.cameraNote || '').toLowerCase();
+    return person.includes(q) || role.includes(q) || title.includes(q) || details.includes(q);
   });
 
   const handleWatchClip = (clip) => {
@@ -64,13 +65,20 @@ export default function BehindTheLens() {
 
   const currentPlaybackItem = selectedClip
     ? {
-        title: selectedClip.title,
-        duration: selectedClip.duration,
-        director: selectedClip.filmmakerName || selectedClip.director,
+        ...selectedClip,
+        title: selectedClip.title || '',
+        personName: selectedClip.personName || selectedClip.filmmakerName || selectedClip.director,
+        role: selectedClip.role || 'Filmmaker',
+        details: selectedClip.details || selectedClip.cameraNote || '',
+        filmography: selectedClip.filmography || '',
+        duration: selectedClip.duration || '3m 00s',
+        director: selectedClip.personName || selectedClip.filmmakerName || selectedClip.director,
         backdrop: selectedClip.thumbnailUrl || selectedClip.image,
         poster: selectedClip.thumbnailUrl || selectedClip.image,
         year: 2024,
-        videoStreamUrl: selectedClip.clipUrl,
+        genres: [selectedClip.role || 'Behind the Lens'],
+        videoStreamUrl: selectedClip.videoUrl || selectedClip.clipUrl,
+        clipUrl: selectedClip.videoUrl || selectedClip.clipUrl,
       }
     : null;
 
@@ -98,19 +106,19 @@ export default function BehindTheLens() {
               <div className="flex items-center gap-2 mb-2">
                 <VideocamOutlinedIcon sx={{ fontSize: 20 }} className="text-[#7E57C2]" />
                 <span className="text-xs uppercase tracking-wider font-semibold text-[#7E57C2]">
-                  Production Archives
+                  Production Archives & Interviews
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                 Behind the Lens
               </h1>
               <p className="text-xs sm:text-sm text-[#8A8F99] mt-2 leading-relaxed">
-                Raw production footage, director diaries, and unreleased reels straight from
-                independent sets across our curated catalog.
+                Interviews, craft diaries, and raw reels for filmmakers, actors, cinematographers,
+                sound designers, and production teams across independent cinema.
               </p>
             </div>
 
-            {/* Search Input & Total Count Pill */}
+            {/* Action Bar: Search Input & Total Count Pill */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative">
                 <SearchIcon
@@ -119,12 +127,13 @@ export default function BehindTheLens() {
                 />
                 <input
                   type="text"
-                  placeholder="Filter by director..."
+                  placeholder="Filter by artist, role, movie..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full sm:w-60 pl-9 pr-3 py-1.5 rounded-lg bg-[#1E2024] border border-[#353941] text-xs text-white placeholder-[#8A8F99] focus:outline-none focus:border-[#7E57C2] transition-colors"
                 />
               </div>
+
               <span className="px-3 py-1.5 rounded-lg bg-[#1E2024] border border-[#353941] text-xs font-mono text-[#8A8F99] text-center whitespace-nowrap">
                 {filteredClips.length} {filteredClips.length === 1 ? 'Clip' : 'Clips'}
               </span>
@@ -151,57 +160,70 @@ export default function BehindTheLens() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {filteredClips.map((item) => (
-              <div
-                key={item.id}
-                className="group bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden hover:border-[#4E535E] transition-all flex flex-col justify-between"
-              >
-                {/* Thumbnail Container */}
-                <div className="relative aspect-video w-full bg-[#1E2024] overflow-hidden">
-                  <img
-                    src={item.thumbnailUrl || item.image}
-                    alt={item.filmmakerName || item.director}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-85"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1E2024] via-transparent to-transparent pointer-events-none" />
+            {filteredClips.map((item) => {
+              const person = item.personName || item.filmmakerName || item.director || 'Artist';
+              const role = item.role || 'Filmmaker';
 
-                  {/* Duration Badge */}
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 border border-[#353941] text-[11px] font-mono text-white">
-                    {item.duration}
-                  </span>
+              return (
+                <div
+                  key={item.id}
+                  className="group bg-[#282B30] border border-[#353941] rounded-xl overflow-hidden hover:border-[#7E57C2]/60 transition-all duration-200 flex flex-col justify-between"
+                >
+                  {/* Clean Thumbnail Container (No text/badges or edit buttons overlaid) */}
+                  <div
+                    onClick={() => handleWatchClip(item)}
+                    className="relative aspect-video w-full bg-[#1E2024] overflow-hidden cursor-pointer"
+                  >
+                    <img
+                      src={item.thumbnailUrl || item.image}
+                      alt={`${role} : ${person}`}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
 
-                  {/* Camera Note Pill */}
-                  {item.cameraNote && (
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/80 border border-[#353941] text-[10px] font-medium text-[#7E57C2]">
-                      {item.cameraNote}
-                    </span>
-                  )}
-                </div>
-
-                {/* Content Details */}
-                <div className="p-4 flex flex-col justify-between flex-1">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white tracking-tight line-clamp-1 group-hover:text-[#7E57C2] transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-[#8A8F99] mt-1">
-                      Filmmaker:{' '}
-                      <strong className="text-[#B8BCC4] font-medium">
-                        {item.filmmakerName || item.director}
-                      </strong>
-                    </p>
+                    {/* Center Play Watermark Hover */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                      <div className="w-10 h-10 rounded-full bg-[#7E57C2] text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                        <PlayArrowIcon fontSize="small" />
+                      </div>
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => handleWatchClip(item)}
-                    className="mt-4 w-full py-2 px-3 rounded-lg bg-[#1E2024] hover:bg-[#7E57C2] border border-[#353941] hover:border-[#7E57C2] text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <PlayArrowIcon sx={{ fontSize: 15 }} />
-                    <span>Watch Footage</span>
-                  </button>
+                  {/* Clean Content Details Underneath */}
+                  <div className="p-4 flex flex-col justify-between flex-1 space-y-3">
+                    <div>
+                      {/* {clip.role} : {clip.personName} */}
+                      <h3
+                        className="text-sm font-semibold text-white tracking-tight line-clamp-1 group-hover:text-[#7E57C2] transition-colors"
+                        title={`${role} : ${person}`}
+                      >
+                        <span className="text-[#8A8F99] font-normal">{role} : </span>
+                        <span className="text-white font-medium">{person}</span>
+                      </h3>
+
+                      {/* Optional Title (if provided) */}
+                      {item.title && item.title.trim() && (
+                        <p
+                          className="text-xs text-[#B8BCC4] mt-1 line-clamp-1"
+                          title={item.title}
+                        >
+                          {item.title}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Play Button */}
+                    <button
+                      onClick={() => handleWatchClip(item)}
+                      className="w-full py-2 px-3 rounded-lg bg-[#1E2024] hover:bg-[#7E57C2] border border-[#353941] hover:border-[#7E57C2] text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <PlayArrowIcon sx={{ fontSize: 15 }} />
+                      <span>Watch Clip</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

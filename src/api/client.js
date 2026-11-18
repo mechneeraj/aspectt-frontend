@@ -80,18 +80,31 @@ export const normalizeMovie = (movie) => {
  */
 export const normalizeClip = (clip) => {
   if (!clip) return null;
+  const person = clip.personName || clip.filmmakerName || clip.director || 'Artist';
+  const role = clip.role || 'Filmmaker';
+  const video = clip.videoUrl || clip.clipUrl || '';
+  const details = clip.details || clip.cameraNote || '';
+  const filmography = clip.filmography || '';
+  const thumb = clip.thumbnailUrl || clip.image || '';
+
   return {
     ...clip,
     id: clip.id,
-    title: clip.title,
-    director: clip.filmmakerName || clip.director || 'Independent Filmmaker',
-    filmmakerName: clip.filmmakerName || clip.director || 'Independent Filmmaker',
-    cameraNote: clip.cameraNote || '',
+    personName: person,
+    role: role,
+    title: clip.title || '',
+    details: details,
+    filmography: filmography,
+    videoUrl: video,
+    thumbnailUrl: thumb,
     duration: clip.duration || '3m 00s',
-    image: clip.thumbnailUrl || clip.image,
-    thumbnailUrl: clip.thumbnailUrl || clip.image,
-    clipUrl: clip.clipUrl || '',
-    film: clip.film || clip.title,
+    // Aliases for full backward compatibility
+    filmmakerName: person,
+    director: person,
+    cameraNote: details,
+    clipUrl: video,
+    image: thumb,
+    film: clip.title || clip.film || '',
   };
 };
 
@@ -233,6 +246,37 @@ export const behindTheLensApi = {
   getAll: async () => {
     const list = await client.get('/behind-the-lens');
     return Array.isArray(list) ? list.map(normalizeClip) : [];
+  },
+
+  /**
+   * GET /api/behind-the-lens/:id
+   */
+  getById: async (id) => {
+    const clip = await client.get(`/behind-the-lens/${encodeURIComponent(id)}`);
+    return normalizeClip(clip);
+  },
+
+  /**
+   * POST /api/behind-the-lens
+   */
+  create: async (clipData) => {
+    const clip = await client.post('/behind-the-lens', clipData);
+    return normalizeClip(clip);
+  },
+
+  /**
+   * PUT /api/behind-the-lens/:id
+   */
+  update: async (id, clipData) => {
+    const clip = await client.put(`/behind-the-lens/${encodeURIComponent(id)}`, clipData);
+    return normalizeClip(clip);
+  },
+
+  /**
+   * DELETE /api/behind-the-lens/:id
+   */
+  delete: async (id) => {
+    return await client.delete(`/behind-the-lens/${encodeURIComponent(id)}`);
   },
 };
 

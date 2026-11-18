@@ -20,6 +20,25 @@ import { useAuth } from '../context/AuthContext';
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2];
 
 /**
+ * Detects YouTube URLs / IDs and returns clean embed URL, or null if direct video stream.
+ */
+export function getYouTubeEmbedUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  // Direct 11-char YouTube ID
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return `https://www.youtube-nocookie.com/embed/${trimmed}?autoplay=1&rel=0&modestbranding=1`;
+  }
+  const match = trimmed.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|watch\?.+&v=))([\w-]{11})/i
+  );
+  if (match && match[1]) {
+    return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=1&rel=0&modestbranding=1`;
+  }
+  return null;
+}
+
+/**
  * Format raw seconds to MM:SS or HH:MM:SS
  */
 function formatTime(secs) {
@@ -104,9 +123,9 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
 
     let isMounted = true;
 
-    // Direct clips (e.g. Behind The Lens) that supply an explicit clipUrl
-    if (mode === 'Footage' && (movie.clipUrl || movie.videoStreamUrl)) {
-      setStreamUrl((movie.clipUrl || movie.videoStreamUrl || '').trim());
+    // Direct clips (e.g. Behind The Lens) that supply an explicit videoUrl, clipUrl, or videoStreamUrl
+    if (mode === 'Footage' && (movie.videoUrl || movie.clipUrl || movie.videoStreamUrl)) {
+      setStreamUrl((movie.videoUrl || movie.clipUrl || movie.videoStreamUrl || '').trim());
       setIsLoadingStream(false);
       return;
     }
@@ -572,9 +591,15 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
         : 'Auto'
       : qualityLevels.find((q) => q.index === currentQuality)?.label || 'Quality';
 
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(streamUrl);
+  const isYouTube = Boolean(youtubeEmbedUrl);
+  const isBehindTheLens =
+    mode === 'Footage' ||
+    Boolean(movie?.personName || movie?.role || movie?.filmography || movie?.details);
+
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md overflow-x-hidden w-full max-w-[100vw]"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md overflow-x-hidden w-full max-w-[100vw] overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
@@ -586,11 +611,11 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
         onMouseLeave={() => {
           if (isPlaying && !activeMenu) setShowControls(false);
         }}
-        className={`relative w-full max-w-[100vw] sm:max-w-5xl bg-black flex flex-col overflow-hidden select-none transition-all duration-200 ${
+        className={`relative w-full max-w-[100vw] sm:max-w-5xl bg-black flex flex-col overflow-hidden select-none transition-all duration-200 my-auto ${
           isFullscreen
             ? 'h-screen w-screen max-w-none rounded-none border-0'
-            : 'rounded-none sm:rounded-xl bg-[#1E2024] border-0 sm:border border-[#353941] shadow-2xl'
-        } ${!showControls && isPlaying ? 'cursor-none' : 'cursor-default'}`}
+            : 'rounded-none sm:rounded-xl bg-[#1E2024] border-0 sm:border border-[#353941] shadow-2xl max-h-[95vh] overflow-y-auto'
+        } ${!showControls && isPlaying && !isYouTube ? 'cursor-none' : 'cursor-default'}`}
       >
         {/* Top Header Overlay */}
         <div
@@ -602,7 +627,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
             paddingRight: 'max(12px, env(safe-area-inset-right, 12px))',
           }}
           className={`absolute top-0 inset-x-0 z-20 flex items-center justify-between pb-3 bg-gradient-to-b from-black/90 via-black/50 to-transparent transition-opacity duration-300 ${
-            showControls || !isPlaying
+            showControls || !isPlaying || isYouTube
               ? 'opacity-100 pointer-events-auto'
               : 'opacity-0 pointer-events-none'
           }`}
@@ -611,12 +636,14 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
             <span className="text-[9px] sm:text-xs uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-[#1E2024]/90 border border-[#353941] text-[#7E57C2] shrink-0">
               {mode === 'trailer'
                 ? 'Official Trailer'
-                : mode === 'Footage'
-                ? 'Behind the Lens'
+                : isBehindTheLens
+                ? `${movie.role || 'Behind the Lens'}`
                 : 'Auteur Stream'}
             </span>
             <h3 className="text-white font-semibold text-xs sm:text-base truncate drop-shadow-md">
-              {movie.title}
+              {isBehindTheLens
+                ? `${movie.role || 'Artist'} : ${movie.personName || movie.director || movie.filmmakerName}${movie.title ? ` — ${movie.title}` : ''}`
+                : movie.title}
             </h3>
           </div>
 
@@ -735,50 +762,63 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
             </div>
           )}
 
-          {/* Real Video Element (Controls suppressed in favor of custom UI) */}
-          <video
-            ref={videoRef}
-            playsInline
-            poster={movie.backdropUrl || movie.backdrop || movie.posterUrl || movie.poster}
-            className="w-full h-full object-contain bg-black"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            onTimeUpdate={() => {
-              const video = videoRef.current;
-              if (video) {
-                setCurrentTime(video.currentTime);
-                updateBuffered();
-              }
-            }}
-            onLoadedMetadata={() => {
-              const video = videoRef.current;
-              if (video) setDuration(video.duration);
-            }}
-            onDurationChange={() => {
-              const video = videoRef.current;
-              if (video) setDuration(video.duration);
-            }}
-            onWaiting={() => setIsBuffering(true)}
-            onPlaying={() => setIsBuffering(false)}
-            onCanPlay={() => setIsBuffering(false)}
-            onError={() => setHasError(true)}
-          />
+          {/* Real Video Element or YouTube Embed IFrame */}
+          {isYouTube ? (
+            <div className="w-full h-full relative aspect-video bg-black flex items-center justify-center">
+              <iframe
+                src={youtubeEmbedUrl}
+                title={movie.title || `${movie.role || 'Artist'} : ${movie.personName || movie.director}`}
+                className="w-full h-full border-0 z-10"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <video
+              ref={videoRef}
+              playsInline
+              poster={movie.backdropUrl || movie.backdrop || movie.posterUrl || movie.poster}
+              className="w-full h-full object-contain bg-black"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onTimeUpdate={() => {
+                const video = videoRef.current;
+                if (video) {
+                  setCurrentTime(video.currentTime);
+                  updateBuffered();
+                }
+              }}
+              onLoadedMetadata={() => {
+                const video = videoRef.current;
+                if (video) setDuration(video.duration);
+              }}
+              onDurationChange={() => {
+                const video = videoRef.current;
+                if (video) setDuration(video.duration);
+              }}
+              onWaiting={() => setIsBuffering(true)}
+              onPlaying={() => setIsBuffering(false)}
+              onCanPlay={() => setIsBuffering(false)}
+              onError={() => setHasError(true)}
+            />
+          )}
 
-          {/* Custom Bottom Control Overlay Bar (Auto-Hides on Inactivity) */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            onDoubleClick={(e) => e.stopPropagation()}
-            style={{
-              paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
-              paddingLeft: 'max(10px, env(safe-area-inset-left, 10px))',
-              paddingRight: 'max(10px, env(safe-area-inset-right, 10px))',
-            }}
-            className={`absolute bottom-0 inset-x-0 z-20 flex flex-col gap-1.5 sm:gap-2.5 pt-12 bg-gradient-to-t from-black/95 via-black/80 to-transparent transition-opacity duration-300 ${
-              showControls || !isPlaying
-                ? 'opacity-100 pointer-events-auto'
-                : 'opacity-0 pointer-events-none'
-            }`}
-          >
+          {/* Custom Bottom Control Overlay Bar (Auto-Hides on Inactivity, direct streams only) */}
+          {!isYouTube && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => e.stopPropagation()}
+              style={{
+                paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))',
+                paddingLeft: 'max(10px, env(safe-area-inset-left, 10px))',
+                paddingRight: 'max(10px, env(safe-area-inset-right, 10px))',
+              }}
+              className={`absolute bottom-0 inset-x-0 z-20 flex flex-col gap-1.5 sm:gap-2.5 pt-12 bg-gradient-to-t from-black/95 via-black/80 to-transparent transition-opacity duration-300 ${
+                showControls || !isPlaying
+                  ? 'opacity-100 pointer-events-auto'
+                  : 'opacity-0 pointer-events-none'
+              }`}
+            >
             {/* Interactive Scrubber & Buffered Progress Bar */}
             <div
               ref={progressBarRef}
@@ -1065,10 +1105,75 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
               </div>
             </div>
           </div>
+        )}
         </div>
 
         {/* Modal Metadata Footer (Hidden during edge-to-edge fullscreen) */}
         {!isFullscreen && (
+          isBehindTheLens ? (
+            <div className="p-4 sm:p-5 bg-[#1E2024] border-t border-[#353941] flex flex-col gap-3.5 text-xs text-[#B8BCC4] max-w-full">
+              {/* Role : PersonName + optional Title */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-[#353941]/60 pb-3.5">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#7E57C2]/20 border border-[#7E57C2]/50 text-[#7E57C2]">
+                      {movie.role || 'Behind the Lens'}
+                    </span>
+                    {movie.duration && (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#282B30] border border-[#353941] text-[#8A8F99]">
+                        {movie.duration}
+                      </span>
+                    )}
+                    {isYouTube && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-red-950/40 border border-red-800/40 text-red-400 font-medium">
+                        YouTube
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-base sm:text-xl font-bold text-white tracking-tight">
+                    <span className="text-[#8A8F99] font-normal">{movie.role || 'Filmmaker'} : </span>
+                    <span className="text-white">{movie.personName || movie.director || movie.filmmakerName}</span>
+                  </h2>
+                  {movie.title && movie.title.trim() && (
+                    <h3 className="text-xs sm:text-sm font-medium text-[#EDEDED] mt-1">
+                      {movie.title}
+                    </h3>
+                  )}
+                </div>
+              </div>
+
+              {/* Optional Details / Bio / Notes */}
+              {movie.details && movie.details.trim() && (
+                <div className="bg-[#282B30]/70 border border-[#353941] rounded-lg p-3.5 sm:p-4">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#7E57C2] block mb-1.5">
+                    About & Craft Insights
+                  </span>
+                  <p className="text-xs sm:text-sm text-[#D1D5DB] leading-relaxed whitespace-pre-line">
+                    {movie.details}
+                  </p>
+                </div>
+              )}
+
+              {/* Optional Notable Works / Filmography */}
+              {movie.filmography && movie.filmography.trim() && (
+                <div className="bg-[#282B30]/40 border border-[#353941] rounded-lg p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-[#8A8F99] shrink-0">
+                    Notable Works / Credits:
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {movie.filmography.split(',').map((work, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded bg-[#1E2024] border border-[#353941] text-[11px] text-white"
+                      >
+                        {work.trim()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
           <div className="p-3 sm:p-4 bg-[#1E2024] border-t border-[#353941] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-[#B8BCC4] max-w-full overflow-hidden">
             <div className="flex items-center gap-2 truncate min-w-0">
               <span className="text-white font-medium truncate">{movie.title}</span>
@@ -1093,6 +1198,7 @@ export default function PlayerModal({ isOpen, onClose, movie, mode = 'feature' }
               ))}
             </div>
           </div>
+          )
         )}
       </div>
     </div>

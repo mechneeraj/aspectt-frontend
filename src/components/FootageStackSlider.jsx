@@ -178,22 +178,20 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
                 cursor-pointer flex flex-col justify-between
                 ${isFront ? 'shadow-[0_10px_25px_rgba(0,0,0,0.65)]' : 'hover:border-[#7E57C2]'}
               `}
-              title={isFront ? `Watch ${clip.director}'s clip` : `Bring to front`}
+              title={
+                isFront
+                  ? `Watch ${clip.role || 'Filmmaker'} : ${clip.personName || clip.filmmakerName || clip.director}`
+                  : `Bring to front`
+              }
             >
-              {/* Thumbnail Container */}
+              {/* Clean Thumbnail Container */}
               <div className="relative aspect-video w-full bg-[#1E2024] overflow-hidden flex-shrink-0">
                 <img
                   src={clip.thumbnailUrl || clip.image}
-                  alt={clip.filmmakerName || clip.director}
-                  className="w-full h-full object-cover opacity-85"
+                  alt={clip.personName || clip.filmmakerName || clip.director}
+                  className="w-full h-full object-cover opacity-90"
                   draggable={false}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1E2024] via-transparent to-transparent pointer-events-none" />
-
-                {/* Duration Badge */}
-                <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/80 border border-[#353941] text-[10px] font-mono text-white">
-                  {clip.duration}
-                </span>
 
                 {/* Central Play Trigger (Front Card Only) */}
                 {isFront && (
@@ -204,7 +202,7 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
                       onWatchClip(clip);
                     }}
                     className="absolute inset-0 flex items-center justify-center bg-black/25 transition-opacity cursor-pointer"
-                    aria-label={`Play ${(clip.filmmakerName || clip.director)}'s clip`}
+                    aria-label={`Play ${clip.role || 'Filmmaker'} : ${clip.personName || clip.filmmakerName || clip.director}`}
                   >
                     <div className="w-9 h-9 rounded-full bg-[#7E57C2] text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform">
                       <PlayArrowIcon fontSize="small" />
@@ -213,10 +211,16 @@ export default function FootageStackSlider({ clips = [], onWatchClip }) {
                 )}
               </div>
 
-              {/* Card Body: Only Director Name and Play button */}
+              {/* Card Body: Only {clip.role} : {clip.personName} and Play button */}
               <div className="p-2.5 flex-1 flex flex-col justify-between">
-                <p className="text-xs text-[#B8BCC4] truncate">
-                  Directed by <strong className="text-white font-medium">{clip.filmmakerName || clip.director}</strong>
+                <p
+                  className="text-xs text-white truncate"
+                  title={`${clip.role || 'Filmmaker'} : ${clip.personName || clip.filmmakerName || clip.director}`}
+                >
+                  <span className="text-[#8A8F99] font-normal">{clip.role || 'Filmmaker'} : </span>
+                  <strong className="text-white font-medium">
+                    {clip.personName || clip.filmmakerName || clip.director}
+                  </strong>
                 </p>
 
                 {/* Play Button */}
